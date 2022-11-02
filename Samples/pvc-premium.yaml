@@ -1,0 +1,15 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-premium
+  annotations:
+    trident.qnap.io/threshold: "90"
+    trident.qnap.io/ThinAllocate: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: premium
+

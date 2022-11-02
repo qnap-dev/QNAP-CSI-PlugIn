@@ -1,0 +1,9 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-from-import
+  namespace: default
+spec:
+  storageClassName: basic
+  accessModes:
+    - ReadWriteOnce

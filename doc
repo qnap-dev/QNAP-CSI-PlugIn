@@ -1,0 +1,80 @@
+====================================================================
+Trident Install
+====================================================================
+(Option 1) Kustomize
+
+    kubectl apply -k Deploy/crds
+    kubectl apply -k Deploy/Trident
+
+(Option 2) Helm 
+
+    helm install qnap-trident ./qnap-trident -n trident --create-namespace
+
+(Option 3) Step By Step
+
+    kubectl apply -f Deploy/Trident/namespace.yaml
+    kubectl apply -f Deploy/crds/trident_CRD.yaml
+    kubectl apply -f Deploy/Trident/bundle.yaml
+    kubectl apply -f Deploy/Trident/tridentorchestrator.yaml
+
+// check if trident is ready
+kubectl get pods -n trident
+
+
+====================================================================
+VolumeSnapshot Install (If need)
+====================================================================
+kubectl apply -k VolumeSnapshot
+
+Or
+
+Deploy from https://github.com/kubernetes-csi/external-snapshotter
+
+    - Install Snapshot CRDs
+    - Install Common Snapshot Controller
+
+====================================================================
+Backend / StorageClass / Volume Simple Test
+====================================================================
+
+(Step 1) Add Backend
+
+    ./tridentctl create backend -f Samples/backend-qts1.json -n trident
+    ./tridentctl get backend -n trident
+
+(Step 2) Deploy StorageClass
+
+    kubectl apply -f Samples/storage-class-qnap-qos.yaml
+    kubectl get sc 
+
+(Step 3) Deploy PVC
+
+    kubectl apply -f Samples/pvc-basic.yaml
+    kubectl get pvc
+
+(Step 4) Deploy Pod
+
+    kubectl apply -f Samples/pod.yaml
+    kubectl get pods
+
+
+====================================================================
+Snapshot Simple Test
+====================================================================
+kubectl apply -f Samples/snapshot-class.yaml
+kubectl apply -f Samples/vol-snapshot.yaml
+
+
+====================================================================
+Uninstall (Non-Helm)
+====================================================================
+kubectl delete deployment trident-operator -n trident
+./tridentctl uninstall -n trident
+kubectl delete tridentorchestrator trident
+
+
+====================================================================
+Reboot Trident
+====================================================================
+kubectl delete tridentorchestrator trident
+kubectl apply -f Deploy/Trident/tridentorchestrator.yaml

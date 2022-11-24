@@ -131,7 +131,31 @@ spec:
 1. Make sure there have corresponded pool.
 2. Run `chmod u+x tridentctl`
 3. Add backend, run `./tridentctl create backend -f <backend.json> -n trident`
-   - Example `./tridentctl create backend -f Samples/backend-qts1.json -n trident`
+   - Example: `./tridentctl create backend -f Samples/backend-qts1.json -n trident`
+   Running around 30 seconds
 4. Check result:
-   - Run kubectl get pods -n trident 
+   - Run `kubectl get pods -n trident`
    - Run `kubectl get qpools -n trident`
+
+## Add StorageClass
+1. Run kubectl apply -f <StorageClass.yaml>
+   - Example: `kubectl apply -f Samples/storage-class-qnap-qos.yaml`
+2. Check Result:
+   - Run `kubectl get sc -n trident`
+
+## Add provision Volume Claim
+1. Run `kubectl apply -f <pvc.yaml>`
+   - Example: `kubectl apply -f Samples/pvc-basic.yaml`
+2. Check Result:
+   - Run `kubectl get pvc`
+   - Run `kubectl get qnapvolume -n trident `
+**Notes: 
+Once pvc is created successfully, the corresponding qnapvolume will also be created which has the detail information of volume. The admin can also check whether the volume is created through UI. **
+
+## Deploy Pod
+1. Run `kubectl apply -f <pod.yaml>`
+   - Example: `kubectl apply -f Samples/pod.yaml`
+2. Check Result:
+   - Run `kubectl get pods`
+**Notes: 
+The image (davidcheng0922/docker-demo) just do time click and print it out; the above pod mounts the pvc we created. Use logs to check whether the pod works well. **

@@ -68,13 +68,13 @@ Edit the backend.json file `Samples/backend-qts1.json` or create a new one like 
 ```
 {
     "version": 1,
-    "operatorVersion": "v1alpha1",
-    "storageVersion": "v1alpha2",
+    "operatorVersion": "v1.0.0-beta",
+    "storageVersion": "v1.0.0-beta",
     "storageDriverName": "qnap-iscsi",
     "backendName": "QTS1",
-    "storageAddress": "10.20.91.69",
-    "username": "admin",
-    "password": "abcd1234",
+    "storageAddress": "<QTS IP Address>",
+    "username": "<QTS Username>",
+    "password": "<QTS Password>",
     "debugTraceFlags": {"api":false, "method":true},
     "storage": [
         {

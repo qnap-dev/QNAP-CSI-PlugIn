@@ -36,6 +36,7 @@ Run `apt install open-iscsi`
 4. Can you launch a pod that uses an image from Docker Hub and can reach your storage system over the pod network?
    - Run `kubectl run -i --ttyping --image=busybox --restart=Never --rm --\ping <management IP>`
    - Example `kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \ping 10.64.118.157`
+5. Check your NAS has been create storage pool and open the iscsi service.
 
 ## Start install QNAP CSI Plugin
 1. Clone the git repository. `gh repo clone qnap-dev/QNAP-CSI-PlugIn`

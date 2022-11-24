@@ -15,6 +15,9 @@ This is official [Container Storage Interface](https://github.com/container-stor
 - CoreOS 1353.8.0 or later
 
 ## Supported feature
+- Add StorageClass
+- Provision Volume (include clone, import)
+- Take snapshot
 
 # Deploy
 ## Before starting
@@ -143,12 +146,21 @@ spec:
 2. Check Result:
    - Run `kubectl get sc -n trident`
 
-## Add provision Volume Claim
+## Provision Volume Claim
+### Add PVC
 1. Run `kubectl apply -f <pvc.yaml>`
    - Example: `kubectl apply -f Samples/pvc-basic.yaml`
 2. Check Result:
    - Run `kubectl get pvc`
-   - Run `kubectl get qnapvolume -n trident `
+   - Run `kubectl get qnapvolume -n trident`
+   
+### Clone PVC
+1. Run `kubectl apply -f <pvc-clone.yaml>`
+2. Check Result: `kubectl get pvc`
+
+### Import PVC
+1. Run `./tridentctl import volume <Backend Name> <LUN Name> -f <pvc-import.yaml> -n trident`
+2. Check Result: `kubectl get pvc -n trident (or -A)`
    
 **Notes:**
 **Once pvc is created successfully, the corresponding qnapvolume will also be created which has the detail information of volume. The admin can also check whether the volume is created through UI.**
@@ -162,3 +174,21 @@ spec:
 **Notes:**
 **The image (davidcheng0922/docker-demo) just do time click and print it out; the above pod mounts the pvc we created. Use logs to check whether the pod works well.**
 
+## Snapshot
+### Create VolumeSnapshot from PVC
+1. Run `kubectl apply -f <VolumeSnapshotClass.yaml>`
+2. Run `kubectl apply -f <VolumeSnapshot.yaml> `
+3. Check Result:
+   - Run `kubectl get volumesnapshot`
+   - Run `kubectl get qsnapshot -n trident`
+   
+**Notes:**
+**Once volumesnapshot is created successfully, the corresponding qsnapshot is also created which record the snapshot information in the storage. The admin can also check whether the volume is created through UI.**
+
+###Create PVC From Snapshot
+The <pvc-from-snapshot.yaml> will contain the snapshot name we created above and created the volume depending on the snapshot. After volume is bound, we have to verify if the snapshot success; we create a new pod and mount the snapshot-pvc in pod. Access to the pod and check if the volume contains the directory we created before.  
+1. Run `kubectl apply -f <pvc-from-snapshot.yaml>`
+2. Run `kubectl apply -f <pod2.yaml>`
+
+# Remove Trident
+Run `helm delete qnap-trident -n trident`

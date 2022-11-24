@@ -23,7 +23,7 @@ Master and worker node should install:
 Run `apt install open-iscsi`
 
 ### Qualify your Kubernetes cluster
-**1. Minikube is not supported**
+1. Minikube is not supported
 2. Make sure “kubectl” works well
    - Run `kubectl get pods`
    - Run `kubectl version`

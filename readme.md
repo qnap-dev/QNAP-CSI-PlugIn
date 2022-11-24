@@ -13,3 +13,11 @@ This is official [Container Storage Interface](https://github.com/container-stor
 - CentOS 7.0 or later
 - RHEL 7.0 or later
 - CoreOS 1353.8.0 or later
+
+## Supported feature
+
+# Deploy
+## Before starting
+### Additional install item in k8s environment
+Master and worker node should install:
+'apt install open-iscsi'

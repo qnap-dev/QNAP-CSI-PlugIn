@@ -127,8 +127,11 @@ spec:
 ```
 
 # Installation
-## Install Backend
+## Add Backend
 1. Make sure there have corresponded pool.
 2. Run `chmod u+x tridentctl`
-3. Install backend, run `./tridentctl create backend -f <backend.json> -n trident`
-  - Example `./tridentctl create backend -f Samples/backend-qts1.json -n trident`
+3. Add backend, run `./tridentctl create backend -f <backend.json> -n trident`
+   - Example `./tridentctl create backend -f Samples/backend-qts1.json -n trident`
+4. Check result:
+   - Run kubectl get pods -n trident 
+   - Run `kubectl get qpools -n trident`

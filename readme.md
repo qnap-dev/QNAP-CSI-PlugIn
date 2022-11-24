@@ -151,7 +151,7 @@ spec:
    - Run `kubectl get qnapvolume -n trident `
    
 **Notes:**
-**Once pvc is created successfully, the corresponding qnapvolume will also be created which has the detail information of volume. The admin can also check whether the volume is created through UI. **
+**Once pvc is created successfully, the corresponding qnapvolume will also be created which has the detail information of volume. The admin can also check whether the volume is created through UI.**
 
 ## Deploy Pod
 1. Run `kubectl apply -f <pod.yaml>`

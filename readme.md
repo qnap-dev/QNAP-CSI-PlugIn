@@ -25,11 +25,11 @@ Run `apt install open-iscsi`
 ### Qualify your Kubernetes cluster
 **1. Minikube is not supported**
 2. Make sure “kubectl” works well
-   - `kubectl get pods`
-   - `kubectl version`
+   - Run `kubectl get pods`
+   - Run `kubectl version`
 3. Make sure you are Kubernetes cluster administrator
    - Run `kubectl auth can-i '*' '*' --all-namespaces`
-   - Should be yes
-4.  Can you launch a pod that uses an image from Docker Hub and can reach your storage system over the pod network?
+   - The result should be yes
+4. Can you launch a pod that uses an image from Docker Hub and can reach your storage system over the pod network?
    - Run `kubectl run -i --ttyping --image=busybox --restart=Never --rm --\ping <management IP>`
    - Example `kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \ping 10.64.118.157`

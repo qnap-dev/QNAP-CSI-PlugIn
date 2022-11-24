@@ -40,13 +40,20 @@ Run `apt install open-iscsi`
 ## Start install QNAP CSI Plugin
 1. Clone the git repository. `gh repo clone qnap-dev/QNAP-CSI-PlugIn`
 2. Enter the directory. `cd QNAP-CSI-PlugIn`
-3. Install helm (for Ubuntu)
+### Normal install
+1. Run `kubectl apply -f Deploy/Trident/namespace.yaml`
+2. Run `kubectl apply -f Deploy/Trident/trident_CRD.yaml`
+3. Run `kubectl apply -f Deploy/Trident/bundle.yaml`
+4. Run `kubectl apply -f Deploy/Trident/tridentorchestrator.yaml`
+
+### Install by Helm 
+1. Install Helm (for Ubuntu)
    - curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
    - sudo apt-get install apt-transport-https --yes
    - echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
    - sudo apt-get update
    - sudo apt-get install helm
-4. Install CSI Plugin
+2. Install CSI Plugin
 Run `helm install qnap-trident ./qnap-trident -n trident --create-namespace`
 
 ## VolumeSnapshot Install (optional)
@@ -62,13 +69,13 @@ Edit the backend.json file `Samples/backend-qts1.json` or create a new one like 
     "version": 1,
     "operatorVersion": "v1alpha1",
     "storageVersion": "v1alpha2",
-    "storageDriverName": "qnap-iscsi", #Defined QNAP driver name
-    "backendName": "QTS1", #Self-defined backend name 
-    "storageAddress": "192.168.1.1", #NAS IP, used for providing volume 
-    "username": "<username>",
-    "password": "<password>",
-    "debugTraceFlags": {"api":false, "method":true}, #Enable/Disable debug log 
-    "storage": [ #torage defines the virtual pools of backend
+    "storageDriverName": "qnap-iscsi",
+    "backendName": "QTS1",
+    "storageAddress": "10.20.91.69",
+    "username": "admin",
+    "password": "abcd1234",
+    "debugTraceFlags": {"api":false, "method":true},
+    "storage": [
         {
             "labels": {"performance": "premium"},
             "features":{
@@ -194,4 +201,10 @@ The <pvc-from-snapshot.yaml> will contain the snapshot name we created above and
 2. Run `kubectl apply -f <pod2.yaml>`
 
 # Remove Trident
+## Normal install
+1. Run `kubectl delete deployment trident-operator -n trident`
+2. Run `./tridentctl uninstall -n trident`
+3. Run `kubectl delete tridentorchestrator trident`
+
+## Install by Helm
 Run `helm delete qnap-trident -n trident`

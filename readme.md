@@ -161,6 +161,9 @@ spec:
 ### Import PVC
 1. Run `./tridentctl import volume <Backend Name> <LUN Name> -f <pvc-import.yaml> -n trident`
 2. Check Result: `kubectl get pvc -n trident (or -A)`
+
+### Create PVC from snapshot
+1. Run `kubectl apply -f <vol-snapshot.yaml>`
    
 **Notes:**
 **Once pvc is created successfully, the corresponding qnapvolume will also be created which has the detail information of volume. The admin can also check whether the volume is created through UI.**

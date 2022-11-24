@@ -20,4 +20,6 @@ This is official [Container Storage Interface](https://github.com/container-stor
 ## Before starting
 ### Additional install item in k8s environment
 Master and worker node should install:
-`apt install open-iscsi`
+```
+apt install open-iscsi
+```

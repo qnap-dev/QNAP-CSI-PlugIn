@@ -94,3 +94,41 @@ Edit the backend.json file `Samples/backend-qts1.json` or create a new one like 
     ]
 }
 ```
+
+## StorageClass.yaml
+Edit the backend.json file `Samples/storage-class-qnap-qos.yaml` or create a new one like the example below:
+```
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: premium
+provisioner: csi.trident.qnap.io #k8s CSI provisioner
+parameters:
+  selector: "performance=premium"
+allowVolumeExpansion: true
+```
+
+## PVC.yaml
+Edit the backend.json file `Samples/pvc-basic.yaml` or create a new one like the example below:
+```
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-basic
+  annotations:
+    trident.qnap.io/ThinAllocate: "false"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: basic
+```
+
+# Installation
+## Install Backend
+1. Make sure there have corresponded pool.
+2. Run `chmod u+x tridentctl`
+3. Install backend, run `./tridentctl create backend -f <backend.json> -n trident`
+  - Example `./tridentctl create backend -f Samples/backend-qts1.json -n trident`

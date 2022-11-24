@@ -157,5 +157,6 @@ Once pvc is created successfully, the corresponding qnapvolume will also be crea
    - Example: `kubectl apply -f Samples/pod.yaml`
 2. Check Result:
    - Run `kubectl get pods`
+   
 **Notes: 
 The image (davidcheng0922/docker-demo) just do time click and print it out; the above pod mounts the pvc we created. Use logs to check whether the pod works well. **

@@ -188,7 +188,7 @@ spec:
 **Notes:**
 **Once volumesnapshot is created successfully, the corresponding qsnapshot is also created which record the snapshot information in the storage. The admin can also check whether the volume is created through UI.**
 
-###Create PVC From Snapshot
+### Create PVC From Snapshot
 The <pvc-from-snapshot.yaml> will contain the snapshot name we created above and created the volume depending on the snapshot. After volume is bound, we have to verify if the snapshot success; we create a new pod and mount the snapshot-pvc in pod. Access to the pod and check if the volume contains the directory we created before.  
 1. Run `kubectl apply -f <pvc-from-snapshot.yaml>`
 2. Run `kubectl apply -f <pod2.yaml>`

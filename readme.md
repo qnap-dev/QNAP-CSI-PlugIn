@@ -33,3 +33,14 @@ Run `apt install open-iscsi`
 4. Can you launch a pod that uses an image from Docker Hub and can reach your storage system over the pod network?
    - Run `kubectl run -i --ttyping --image=busybox --restart=Never --rm --\ping <management IP>`
    - Example `kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \ping 10.64.118.157`
+
+## Start install QNAP CSI Plugin
+1. Clone the git repository. `gh repo clone qnap-dev/QNAP-CSI-PlugIn`
+2. Enter the directory. `cd QNAP-CSI-PlugIn`
+3. Install helm (for Ubuntu)
+   - curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -
+   - sudo apt-get install apt-transport-https --yes
+   - echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
+   - sudo apt-get update
+   - sudo apt-get install helm
+

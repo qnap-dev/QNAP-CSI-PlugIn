@@ -52,20 +52,20 @@ Run `kubectl apply -k VolumeSnapshot`
 
 # CSI Configuration
 ## Backend.json
-Add trident backend into orchestrator; it is essential before creating volume. Each column is required.
+Add backend into orchestrator; it is essential before creating volume. Each column is required.
 Edit the backend.json file `Samples/backend-qts1.json` or create a new one like the example below:
 ```
 {
     "version": 1,
     "operatorVersion": "v1alpha1",
     "storageVersion": "v1alpha2",
-    "storageDriverName": "qnap-iscsi",
-    "backendName": "QTS1",
-    "storageAddress": "192.168.1.1",
+    "storageDriverName": "qnap-iscsi", #Defined QNAP driver name
+    "backendName": "QTS1", #Self-defined backend name 
+    "storageAddress": "192.168.1.1", #NAS IP, used for providing volume 
     "username": "<username>",
     "password": "<password>",
-    "debugTraceFlags": {"api":false, "method":true}, //Enable/Disable debug log 
-    "storage": [ //storage defines the virtual pools of backend
+    "debugTraceFlags": {"api":false, "method":true}, #Enable/Disable debug log 
+    "storage": [ #torage defines the virtual pools of backend
         {
             "labels": {"performance": "premium"},
             "features":{

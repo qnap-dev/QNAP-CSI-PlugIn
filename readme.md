@@ -46,3 +46,51 @@ Run `apt install open-iscsi`
 4. Install CSI Plugin
 Run `helm install qnap-trident ./qnap-trident -n trident --create-namespace`
 
+## VolumeSnapshot Install (optional)
+It's necessary for taking snapshot.
+Run `kubectl apply -k VolumeSnapshot`
+
+# CSI Configuration
+## Backend.json
+Add trident backend into orchestrator; it is essential before creating volume. Each column is required.
+Edit the backend.json file `Samples/backend-qts1.json` or create a new one like the example below:
+```
+{
+    "version": 1,
+    "operatorVersion": "v1alpha1",
+    "storageVersion": "v1alpha2",
+    "storageDriverName": "qnap-iscsi",
+    "backendName": "QTS1",
+    "storageAddress": "192.168.1.1",
+    "username": "<username>",
+    "password": "<password>",
+    "debugTraceFlags": {"api":false, "method":true}, //Enable/Disable debug log 
+    "storage": [ //storage defines the virtual pools of backend
+        {
+            "labels": {"performance": "premium"},
+            "features":{
+                "tiering": "Enable",
+                "tierType": "SSD",
+                "ssdCache": "true"
+            },
+            "serviceLevel": "premium"
+        },
+        {
+            "labels": {"performance": "standard"},
+            "features":{
+                "tiering": "Enable",
+                "tierType": "SSD"
+            },
+            "serviceLevel": "standard"
+        },
+        {
+            "labels": {"performance": "basic"},
+            "features":{
+                "tiering": "Disable",
+                "tierType": "SATA"
+            },
+            "serviceLevel": "basic"
+        }
+    ]
+}
+```

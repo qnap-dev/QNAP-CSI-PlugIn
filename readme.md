@@ -19,16 +19,14 @@ This is official [Container Storage Interface](https://github.com/container-stor
 # Deploy
 ## Before starting
 ### Additional install item in k8s environment
-Master and worker node should install:
-```
-apt install open-iscsi
-```
+Master and worker node should install: 
+`apt install open-iscsi`
 
 ### Qualify your Kubernetes cluster
 1.	Minikube is not supported
 2.	Make sure “kubectl” works well
-2.1.	kubectl get pods
-2.2.	kubectl version
+ - kubectl get pods
+ - kubectl version
 3.	Make sure you are Kubernetes cluster administrator
-3.1.	kubectl auth can-i '*' '*' --all-namespaces
-3.2.	Should be yes
+ - kubectl auth can-i '*' '*' --all-namespaces
+ - Should be yes

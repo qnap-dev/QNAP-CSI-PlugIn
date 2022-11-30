@@ -5,7 +5,7 @@ This is official [Container Storage Interface](https://github.com/container-stor
 ### CSI Driver version and Compatibility
 | Driver Version  | Supported k8s version   | Supported QNAP NAS version |
 | ----------------| ------------------------|----------------------------|
-| v0.0.0-beta     |     1.14 to 1.23        | QuTS 5.0.0 or later        |
+| v1.0.0-beta     |     1.14 to 1.23        | QuTS 5.0.0 or later        |
 
 ### Supported host operating systems
 - Debian 8 or later
@@ -34,18 +34,22 @@ Run `apt install open-iscsi`
    - Run `kubectl auth can-i '*' '*' --all-namespaces`
    - The result should be yes
 4. Can you launch a pod that uses an image from Docker Hub and can reach your storage system over the pod network?
-   - Run `kubectl run -i --ttyping --image=busybox --restart=Never --rm --\ping <management IP>`
+   - Run `kubectl run -i --ttyping --image=busybox --restart=Never --rm --\ping <NAS management IP>`
    - Example `kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \ping 10.64.118.157`
 5. Check your NAS has been create storage pool and open the iscsi service.
 
 ## Start install QNAP CSI Plugin
-1. Clone the git repository. `gh repo clone qnap-dev/QNAP-CSI-PlugIn`
+1. Clone the git repository. `git clone https://github.com/qnap-dev/QNAP-CSI-PlugIn.git`
 2. Enter the directory. `cd QNAP-CSI-PlugIn`
 ### Normal install
 1. Run `kubectl apply -f Deploy/Trident/namespace.yaml`
-2. Run `kubectl apply -f Deploy/Trident/trident_CRD.yaml`
+2. Run `kubectl apply -f Deploy/Trident/crds/trident_CRD.yaml`
 3. Run `kubectl apply -f Deploy/Trident/bundle.yaml`
 4. Run `kubectl apply -f Deploy/Trident/tridentorchestrator.yaml`
+
+### Install by Kustomize
+1. Run `kubectl apply -k Deploy/crds`
+2. Run `kubectl apply -k Deploy/Trident`
 
 ### Install by Helm 
 1. Install Helm (for Ubuntu)
@@ -61,6 +65,10 @@ Run `helm install qnap-trident ./qnap-trident -n trident --create-namespace`
 It's necessary for taking snapshot.
 Run `kubectl apply -k VolumeSnapshot`
 
+## Check if trident deployment is ready
+   - Run `kubectl get deployment -n trident`
+   - The result has "trident-csi" and "trident-operator"
+
 # CSI Configuration
 ## Backend.json
 Add backend into orchestrator; it is essential before creating volume. Each column is required.
@@ -71,7 +79,7 @@ Edit the backend.json file `Samples/backend-qts1.json` or create a new one like 
     "operatorVersion": "v1.0.0-beta",
     "storageVersion": "v1.0.0-beta",
     "storageDriverName": "qnap-iscsi",
-    "backendName": "<BackendName>",
+    "backendName": "QTS1",
     "storageAddress": "<QTS IP Address>",
     "username": "<QTS Username>",
     "password": "<QTS Password>",

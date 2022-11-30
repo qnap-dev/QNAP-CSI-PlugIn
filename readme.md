@@ -71,7 +71,7 @@ Edit the backend.json file `Samples/backend-qts1.json` or create a new one like 
     "operatorVersion": "v1.0.0-beta",
     "storageVersion": "v1.0.0-beta",
     "storageDriverName": "qnap-iscsi",
-    "backendName": "QTS1",
+    "backendName": "<BackendName>",
     "storageAddress": "<QTS IP Address>",
     "username": "<QTS Username>",
     "password": "<QTS Password>",

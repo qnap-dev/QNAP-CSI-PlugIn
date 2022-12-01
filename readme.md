@@ -150,14 +150,15 @@ spec:
 1. Make sure there have corresponded pool.
 2. Run `chmod u+x tridentctl`
 3. Add backend, run `./tridentctl create backend -f <backend.json> -n trident`
-   - Example: `./tridentctl create backend -f Samples/backend-qts1.json -n trident`
-   Running around 30 seconds
+   - Example: `./tridentctl create backend -f Samples/backend-qts1.json -n trident`, Running around 30 seconds
+   - Troubleshooting: Over 30 seconds and show the error "command terminated with exit code 1", which is caused by timeout, please again or check your network connection.
+   
 4. Check result:
    - Run `kubectl get pods -n trident`
    - Run `kubectl get qpools -n trident`
 
 ## Add StorageClass
-1. Run kubectl apply -f <StorageClass.yaml>
+1. Run `kubectl apply -f <StorageClass.yaml>`
    - Example: `kubectl apply -f Samples/storage-class-qnap-qos.yaml`
 2. Check Result:
    - Run `kubectl get sc -n trident`
@@ -166,9 +167,17 @@ spec:
 ### Add PVC
 1. Run `kubectl apply -f <pvc.yaml>`
    - Example: `kubectl apply -f Samples/pvc-basic.yaml`
+   - For this sample is thick LUN, if you want to create thin LUN, reference the Samples/pvc-standard.yaml
 2. Check Result:
-   - Run `kubectl get pvc`
-   - Run `kubectl get qnapvolume -n trident`
+   - Run `kubectl get pvc`, check the pvc has dispalys on the pvc list and the status is "Bound"
+   - Run `kubectl get qnapvolume -n trident`, it will print the name of volume and check the NAS you has setted on backend is already created the volume/LUN.
+   
+### Resize the PVC
+1. Run `kubectl edit pvc <pvc_name>`
+   - Example: `kubectl edit pvc pvc-basic`
+2. Check Result:
+   - The capacity on the NAS will increase after few seconds
+   - The information after runing `kubectl get pvc` will update the size after pod restart.
    
 ### Clone PVC
 1. Run `kubectl apply -f <pvc-clone.yaml>`
@@ -189,6 +198,7 @@ spec:
    - Example: `kubectl apply -f Samples/pod.yaml`
 2. Check Result:
    - Run `kubectl get pods`
+   - Check the connection has be mapped on the NAS Management (iSCSI & Fibre Channel app)
    
 **Notes:**
 **The image (davidcheng0922/docker-demo) just do time click and print it out; the above pod mounts the pvc we created. Use logs to check whether the pod works well.**

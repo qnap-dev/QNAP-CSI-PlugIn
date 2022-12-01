@@ -220,7 +220,7 @@ The <pvc-from-snapshot.yaml> will contain the snapshot name we created above and
 2. Run `kubectl apply -f <pod2.yaml>`
 
 # Remove Trident
-## Normal install
+## Normal install or Kustomize
 1. Run `kubectl delete deployment trident-operator -n trident`
 2. Run `./tridentctl uninstall -n trident`
 3. Run `kubectl delete tridentorchestrator trident`

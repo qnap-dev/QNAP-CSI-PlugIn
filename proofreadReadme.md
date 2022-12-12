@@ -5,7 +5,7 @@ This is the official [Container Storage Interface](https://github.com/container-
 ### CSI Driver Version and Compatibility  
 | **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS**                |  
 |------------------- | --------------------------------- | ------------------------------------- |  
-| v1.0.0-beta        | 1.14 to 1.23                      | NAS running QuTS hero h5.0.0 or later |  
+| v1.0.0-beta        | 1.14 to 1.23                      | NAS running QTS 5.0.0 or later        |  
  
 ### Supported Host Operating Systems  
 - Debian 8 or later  
@@ -30,14 +30,18 @@ apt install open-iscsi
 #### Qualify Your Kubernetes Cluster  
 _Note: Minikube is not supported._ 
 1. Make sure `kubectl` is installed and working.  
+   - Run the following commands one at a time. 
 ``` 
 kubectl get pods 
+``` 
+``` 
 kubectl version 
 ``` 
 2. Verify that you are logged in as a Kubernetes cluster administrator.  
 ``` 
 kubectl auth can-i '*' '*' --all-namespaces 
 ``` 
+   - The result should be "yes". 
 3. Verify that you can launch a pod that uses an image from Docker Hub and can reach your storage system over the pod network.  
 ``` 
 kubectl run -i --ttyping --image=busybox --restart=Never --rm --\ping <NAS management IP> 
@@ -59,26 +63,45 @@ cd QNAP-CSI-PlugIn
 3. Select one of the following installation methods. 
  
 #### Normal Installation Method 
+Run the following commands one at a time in order. 
 ``` 
 kubectl apply -f Deploy/Trident/namespace.yaml 
+``` 
+``` 
 kubectl apply -f Deploy/Trident/crds/trident_CRD.yaml 
+``` 
+``` 
 kubectl apply -f Deploy/Trident/bundle.yaml 
+``` 
+``` 
 kubectl apply -f Deploy/Trident/tridentorchestrator.yaml 
 ``` 
  
 #### Installing via Kustomize  
+Run the following commands one at a time in order. 
 ``` 
 kubectl apply -k Deploy/crds 
+``` 
+``` 
 kubectl apply -k Deploy/Trident 
 ``` 
  
 #### Installing via Helm   
 1. Install Helm (for Ubuntu). 
+   - Run the following commands one at a time in order. 
 ```  
 curl https://baltocdn.com/helm/signing.asc | sudo apt-key add -  
+``` 
+``` 
 sudo apt-get install apt-transport-https --yes  
+``` 
+``` 
 echo "deb https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list  
+``` 
+``` 
 sudo apt-get update  
+``` 
+``` 
 sudo apt-get install helm  
 ```  
 2. Install the CSI plugin. 
@@ -190,8 +213,11 @@ chmod u+x tridentctl
    - This should take around 30 seconds or less. 
    - If it takes over 30 seconds and shows the error "Command terminated with exit code 1" due to timeout, check your network connection and try again.  
 4. Check the result.  
+   - Run the following commands one at a time. 
 ``` 
 kubectl get pods -n trident 
+``` 
+``` 
 kubectl get qpools -n trident 
 ``` 
  
@@ -282,13 +308,19 @@ _Note: After deploying the pod, the only thing you can do with the pod is print 
 ### Snapshots  
 #### Creating a VolumeSnapshot from a PVC  
 1. Create a VolumeSnapshot from a PVC.  
+   - Run the following commands one at a time. 
 ``` 
 kubectl apply -f <VolumeSnapshotClass.yaml> 
+``` 
+``` 
 kubectl apply -f <VolumeSnapshot.yaml> 
 ``` 
 2. Check the result.  
+   - Run the following commands one at a time. 
 ``` 
 kubectl get volumesnapshot 
+``` 
+``` 
 kubectl get qsnapshot -n trident 
 ``` 
  
@@ -297,8 +329,11 @@ Once `volumesnapshot` is created successfully, the corresponding `qsnapshot` wil
  
 #### Creating a PVC From a Snapshot  
 1. Create a PVC from a snapshot. 
+   - Run the following commands one at a time. 
 ``` 
 kubectl apply -f <pvc-from-snapshot.yaml> 
+``` 
+``` 
 kubectl apply -f <pod2.yaml> 
 ```  
 2. Verify the PVC has been successfully created from the snapshot. 
@@ -307,9 +342,14 @@ kubectl apply -f <pod2.yaml>
  
 ## Uninstalling Trident 
 ### Normal Uninstallation Method / Uninstalling via Kustomize  
+Run the following commands one at a time in order. 
 ``` 
 kubectl delete deployment trident-operator -n trident 
+``` 
+``` 
 ./tridentctl uninstall -n trident 
+``` 
+``` 
 kubectl delete tridentorchestrator trident 
 ``` 
  

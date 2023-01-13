@@ -10,4 +10,4 @@ tridentOperator:
   debug: true
 
 tridentOrchestrator:
-  image: qnapsystem/qnap-csi:v1.0.0-beta
+  image: qnapsystem/qnap-csi:v1.0.1-beta

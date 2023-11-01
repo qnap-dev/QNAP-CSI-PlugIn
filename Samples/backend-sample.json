@@ -1,0 +1,40 @@
+{
+    "version": 1,
+    "storageDriverName": "qnap-iscsi",
+    "backendName": "qts-david",
+    "storageAddress": "10.20.91.69",
+    "username": "admin",
+    "password": "abcd1234",
+    "debugTraceFlags": {"method":true},
+    "storage": [
+        {
+            "labels": {"storage": "qts-david"},
+            "serviceLevel": "Any"
+        },
+        {
+            "labels": {"performance": "premium"},
+            "features":{
+                "tiering": "Enable",
+                "tierType": "SSD",
+                "ssdCache": "true"
+            },
+            "serviceLevel": "SSD-Cache"
+        },
+        {
+            "labels": {"performance": "standard"},
+            "features":{
+                "tiering": "Enable",
+                "tierType": "SSD"
+            },
+            "serviceLevel": "Tiering"
+        },
+        {
+            "labels": {"performance": "basic"},
+            "features":{
+                "tiering": "Disable",
+                "tierType": "SATA"
+            },
+            "serviceLevel": "Non-Tiering"
+        }
+    ]
+}

@@ -1,0 +1,8 @@
+apiVersion: trident.qnap.io/v1
+kind: TridentOrchestrator
+metadata:
+  name: trident
+spec:
+  debug: {{ .Values.tridentOrchestrator.debug }}
+  namespace: {{ .Release.Namespace }}
+  tridentImage: {{ .Values.tridentOrchestrator.image}}

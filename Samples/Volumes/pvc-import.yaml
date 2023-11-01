@@ -1,0 +1,15 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-import
+  namespace: default
+  annotations:
+    trident.qnap.io/importOriginalName: "<LUN Name>"
+    trident.qnap.io/importBackendName: "<Backend Name>"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: basic

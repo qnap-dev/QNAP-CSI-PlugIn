@@ -5,7 +5,7 @@ This is the official [Container Storage Interface](https://github.com/container-
 ### CSI Driver Version and Compatibility  
 | **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS**                |  
 |------------------- | --------------------------------- | ------------------------------------- |  
-| v1.0.0-beta        | 1.14 to 1.23                      | NAS running QTS 5.0.0 or later        |  
+| v1.1.0             | 1.21 to 1.27                      | NAS running QTS 5.0.0 or later        |  
  
 ### Supported Host Operating Systems  
 - Debian 8 or later  
@@ -68,7 +68,7 @@ Run the following commands one at a time in order.
 kubectl apply -f Deploy/Trident/namespace.yaml 
 ``` 
 ``` 
-kubectl apply -f Deploy/Trident/crds/trident_CRD.yaml 
+kubectl apply -f Deploy/Trident/crds/tridentorchestrator_crd.yaml 
 ``` 
 ``` 
 kubectl apply -f Deploy/Trident/bundle.yaml 
@@ -106,9 +106,14 @@ sudo apt-get install helm
 ```  
 2. Install the CSI plugin. 
 ``` 
-helm install qnap-trident ./qnap-trident -n trident --create-namespace 
+helm install qnap-trident ./Helm/trident -n trident --create-namespace 
 ``` 
- 
+
+- Upgrade 
+```
+helm upgrade qnap-trident Helm/trident/ -n trident
+```
+
 ### Install VolumeSnapshot (optional)  
 _Note: You need `VolumeSnapshot` to take snapshots._ 
 ``` 
@@ -129,10 +134,8 @@ You must configure this file before you create a volume. Each column is required
 ```json  
 {  
     "version": 1,  
-    "operatorVersion": "v1.0.0-beta",  
-    "storageVersion": "v1.0.0-beta",  
     "storageDriverName": "qnap-iscsi",  
-    "backendName": "QTS1",  
+    "backendName": "<Name>",  
     "storageAddress": "<QTS IP Address>",  
     "username": "<QTS Username>",  
     "password": "<QTS Password>",  
@@ -207,9 +210,9 @@ chmod u+x tridentctl
 ```  
 3. Add a backend based on the JSON file you configured earlier.  
 ``` 
-./tridentctl create backend -f <backend.json> -n trident 
+./bin/tridentctl create backend -f <backend.json> -n trident 
 ``` 
-   - For example: `./tridentctl create backend -f Samples/backend-qts1.json -n trident` 
+   - For example: `./bin/tridentctl create backend -f Samples/backend-qts1.json -n trident` 
    - This should take around 30 seconds or less. 
    - If it takes over 30 seconds and shows the error "Command terminated with exit code 1" due to timeout, check your network connection and try again.  
 4. Check the result.  
@@ -217,78 +220,46 @@ chmod u+x tridentctl
 ``` 
 kubectl get pods -n trident 
 ``` 
-``` 
-kubectl get qpools -n trident 
-``` 
  
 ### Adding a StorageClass  
-1. Apply the StorageClass YAML file you configured earlier.  
 ``` 
 kubectl apply -f <StorageClass.yaml> 
 ``` 
    - For example: `kubectl apply -f Samples/storage-class-qnap-qos.yaml`  
-2. Check the result.  
-``` 
-kubectl get sc -n trident 
-```  
+
  
 ### Persistent Volume Claims (PVCs) 
 #### Adding a PVC  
-1. Add a PVC.  
 ``` 
 kubectl apply -f <pvc.yaml> 
 ``` 
    - For example: `kubectl apply -f Samples/pvc-basic.yaml`  
    - This example creates a thick LUN. If you want to create a thin LUN, refer to the `Samples/pvc-standard.yaml` file. 
-2. Check that the PVC is on the PVC list and its status is "Bound". 
-``` 
-kubectl get pvc 
-``` 
-3. Check that the NAS has created the LUN. 
-``` 
-kubectl get qnapvolume -n trident 
-```  
- 
+
 #### Resizing a PVC  
-1. Resize a PVC. 
 ``` 
 kubectl edit pvc <pvc name> 
 ``` 
    - For example: `kubectl edit pvc pvc-basic`  
    - After a few seconds, the capacity will increase on the NAS. 
-2. Check the result.  
-``` 
-kubectl get pvc 
-``` 
    - After the pod restarts, information on the capacity will be updated. 
  
 #### Cloning a PVC  
-1. Clone a PVC.  
 ``` 
 kubectl apply -f <pvc-clone.yaml> 
 ``` 
-2. Check the result.  
-``` 
-kubectl get pvc 
-``` 
- 
+
 #### Importing a PVC  
-1. Import a PVC.  
 ``` 
-./tridentctl import volume <Backend Name> <LUN Name> -f <pvc-import.yaml> -n trident 
-``` 
-2. Check the result.  
-``` 
-kubectl get pvc -n trident (or -A) 
+kubectl apply -f <pvc-import.yaml> 
 ``` 
  
 #### Creating a PVC from a Snapshot  
 ``` 
 kubectl apply -f <vol-snapshot.yaml> 
-``` 
-_Note: Once a PVC is successfully created, the corresponding `qnapvolume` will also be created, which has detailed information on the volume. An admin can check whether the volume has been created via the Kubernetes user interface._ 
- 
-### Deploying a Pod  
+```
+
+#### Deploying a Pod  
 1. Deploy a pod.  
 ``` 
 kubectl apply -f <pod yaml file> 
@@ -303,7 +274,7 @@ kubectl get pods
  
 You can now mount a PVC to the pod. 
  
-_Note: After deploying the pod, the only thing you can do with the pod is print out its timestamp._ 
+_Note: After deploying the pod, the only thing you can do with the pod is print out its timestamp.
  
 ### Snapshots  
 #### Creating a VolumeSnapshot from a PVC  
@@ -320,12 +291,6 @@ kubectl apply -f <VolumeSnapshot.yaml>
 ``` 
 kubectl get volumesnapshot 
 ``` 
-``` 
-kubectl get qsnapshot -n trident 
-``` 
- 
-_Note: 
-Once `volumesnapshot` is created successfully, the corresponding `qsnapshot` will also be created, which records the snapshot information in the storage. An admin can check whether the snapshot has been created via the Kubernetes user interface._ 
  
 #### Creating a PVC From a Snapshot  
 1. Create a PVC from a snapshot. 
@@ -347,7 +312,7 @@ Run the following commands one at a time in order.
 kubectl delete deployment trident-operator -n trident 
 ``` 
 ``` 
-./tridentctl uninstall -n trident 
+./bin/tridentctl uninstall -n trident 
 ``` 
 ``` 
 kubectl delete tridentorchestrator trident 
@@ -357,3 +322,11 @@ kubectl delete tridentorchestrator trident
 ``` 
 helm delete qnap-trident -n trident 
 ``` 
+
+### Reboot 
+```
+kubectl delete tridentorchestrator trident
+```
+```
+kubectl apply -f Deploy/Trident/tridentorchestrator.yaml
+```

@@ -80,6 +80,18 @@ rules:
   - apiGroups:
       - ""
     resources:
+      - resourcequotas
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - delete
+      - update
+      - patch
+  - apiGroups:
+      - ""
+    resources:
       - pods
     verbs:
       - get
@@ -200,6 +212,7 @@ rules:
       - tridentstorageclasses
       - tridentvolumes
       - tridentvolumepublications
+      - tridentvolumereferences
       - tridentnodes
       - tridenttransactions
       - tridentsnapshots
@@ -236,6 +249,7 @@ rules:
       - namespaces
     verbs:
       - create
+      - patch
   - apiGroups:
       - apps
     resources:
@@ -254,15 +268,29 @@ rules:
       - apps
     resources:
       - deployments
-      - daemonsets
       - statefulsets
     verbs:
       - delete
       - update
       - patch
     resourceNames:
-      - trident-csi
       - trident
+      - trident-csi
+      - trident-controller
+  - apiGroups:
+      - apps
+    resources:
+      - daemonsets
+    verbs:
+      - delete
+      - update
+      - patch
+    resourceNames:
+      - trident
+      - trident-csi
+      - trident-csi-windows
+      - trident-node-linux
+      - trident-node-windows
   - apiGroups:
       - ""
     resources:
@@ -272,8 +300,8 @@ rules:
     verbs:
       - get
       - list
-      - watch
       - create
+      - watch
       - delete
       - update
       - patch
@@ -282,7 +310,6 @@ rules:
     resources:
       - pods/exec
       - services
-      - serviceaccounts
     verbs:
       - delete
       - update
@@ -291,9 +318,26 @@ rules:
       - trident-csi
       - trident
   - apiGroups:
+      - ""
+    resources:
+      - serviceaccounts
+    verbs:
+      - watch
+      - delete
+      - update
+      - patch
+    resourceNames:
+      - trident-controller
+      - trident-node-linux
+      - trident-node-windows
+      - trident-csi
+      - trident
+  - apiGroups:
       - authorization.openshift.io
       - rbac.authorization.k8s.io
     resources:
+      - roles
+      - rolebindings
       - clusterroles
       - clusterrolebindings
     verbs:
@@ -306,6 +350,8 @@ rules:
       - authorization.openshift.io
       - rbac.authorization.k8s.io
     resources:
+      - roles
+      - rolebindings
       - clusterroles
       - clusterrolebindings
     verbs:
@@ -313,6 +359,9 @@ rules:
       - update
       - patch
     resourceNames:
+      - trident-controller
+      - trident-node-linux
+      - trident-node-windows
       - trident-csi
       - trident
   - apiGroups:
@@ -345,6 +394,9 @@ rules:
     resources:
       - securitycontextconstraints
     resourceNames:
+      - trident-controller
+      - trident-node-linux
+      - trident-node-windows
       - trident
     verbs:
       - delete
@@ -357,6 +409,9 @@ rules:
     verbs:
       - use
     resourceNames:
+      - trident-controller
+      - trident-node-linux
+      - trident-node-windows
       - tridentoperatorpods
   # Now Qnap Operator
   - apiGroups:
@@ -477,7 +532,8 @@ spec:
       containers:
         - command:
             - /trident-operator
-            - --debug
+            - --log-level=debug
+            - --qts-cgi-image=qnapsystem/qnap-csi-backend-qts-sidecar:v1.1.0
           env:
             - name: POD_NAME
               valueFrom:
@@ -485,29 +541,21 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: trident-operator
-          image: qnapsystem/qnap-csi-operator:v1.0.0-beta
+          image: qnapsystem/qnap-csi-operator:v1.1.0
           imagePullPolicy: IfNotPresent
           name: trident-operator
-      nodeSelector:
-        kubernetes.io/arch: amd64
-        kubernetes.io/os: linux
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/arch
+                    operator: In
+                    values:
+                      - arm64
+                      - amd64
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
       serviceAccountName: trident-operator
----
-apiVersion: policy/v1beta1
-kind: PodSecurityPolicy
-metadata:
-  labels:
-    app: operator.trident.qnap.io
-  name: tridentoperatorpods
-spec:
-  fsGroup:
-    rule: RunAsAny
-  privileged: false
-  runAsUser:
-    rule: RunAsAny
-  seLinux:
-    rule: RunAsAny
-  supplementalGroups:
-    rule: RunAsAny
-  volumes:
-    - '*'

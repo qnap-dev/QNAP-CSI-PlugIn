@@ -5,4 +5,4 @@ metadata:
 spec:
   debug: true
   namespace: trident
-  tridentImage: qnapsystem/qnap-csi:v1.0.1-beta
+  tridentImage: qnapsystem/qnap-csi:v1.1.0

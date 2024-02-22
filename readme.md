@@ -68,7 +68,7 @@ Run the following commands one at a time in order.
 kubectl apply -f Deploy/Trident/namespace.yaml 
 ``` 
 ``` 
-kubectl apply -f Deploy/Trident/crds/tridentorchestrator_crd.yaml 
+kubectl apply -f Deploy/crds/tridentorchestrator_crd.yaml 
 ``` 
 ``` 
 kubectl apply -f Deploy/Trident/bundle.yaml 

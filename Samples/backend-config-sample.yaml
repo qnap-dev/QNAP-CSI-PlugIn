@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-qts-sample-secret
+  namespace: trident
+type: Opaque
+stringData:
+  username: david
+  password: abcd1234
+  storageAddress: 10.20.91.69
+---
+apiVersion: trident.qnap.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-qts-sample-config
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: qnap-iscsi
+  backendName: qts-david
+  networkInterfaces: ["K8s-ISCSI"] #optional
+  credentials:
+    name: backend-qts-sample-secret
+  debugTraceFlags:
+    method: false
+  storage:
+    - labels:
+        storage: qts-david
+        serviceLevel: Any
+    - labels:
+        performance: premium
+      features:
+        tiering: Enable
+        tierType: SSD
+        ssdCache: "true"
+      serviceLevel: SSD-Cache
+    - labels:
+        performance: standard
+      features:
+        tiering: Enable
+      serviceLevel: Tiering
+    - labels:
+        performance: basic
+      features:
+        tiering: Disable
+      serviceLevel: Non-Tiering

@@ -5,14 +5,18 @@ This is the official [Container Storage Interface](https://github.com/container-
 ### CSI Driver Version and Compatibility  
 | **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS**                |  
 |------------------- | --------------------------------- | ------------------------------------- |  
-| v1.1.0             | 1.21 to 1.27                      | NAS running QTS 5.0.0 or later        |  
+| v1.2.0             | 1.21 to 1.27                      | NAS running QTS 5.0.0 or later        |  
  
 ### Supported Host Operating Systems  
 - Debian 8 or later  
 - Ubuntu 16.04 or later  
 - CentOS 7.0 or later  
 - RHEL 7.0 or later  
-- CoreOS 1353.8.0 or later  
+- CoreOS 1353.8.0 or later
+
+### Supported platform
+- AMD 64
+- ARM 64 and ARM v7
  
 ## Supported Features  
 - Add StorageClasses  
@@ -127,47 +131,104 @@ kubectl get deployment -n trident
    - The result should include `trident-csi` and `trident-operator`. 
  
 ## CSI Configuration  
-### Backend.json File  
+### CR (TridentBackendConfig): backend-config-sample.yaml
+Edit the file `Samples/backend-config-sample.yaml` or create a new one as shown below. 
+You must configure this file before you create a volume. Each column is required.  
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-qts-sample-secret
+  namespace: trident
+type: Opaque
+stringData:
+  username: david
+  password: abcd1234
+  storageAddress: 10.20.91.69
+---
+apiVersion: trident.qnap.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-qts-sample-config
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: qnap-iscsi
+  backendName: qts-david
+  credentials:
+    name: backend-qts-sample-secret
+  debugTraceFlags:
+    method: false
+  storage:
+    - labels:
+        storage: qts-david
+        serviceLevel: Any
+    - labels:
+        performance: premium
+      features:
+        tiering: Enable
+        tierType: SSD
+        ssdCache: "true"
+      serviceLevel: SSD-Cache
+    - labels:
+        performance: standard
+      features:
+        tiering: Enable
+        tierType: SSD
+      serviceLevel: Tiering
+    - labels:
+        performance: basic
+      features:
+        tiering: Disable
+        tierType: SATA
+      serviceLevel: Non-Tiering
+```
+### CLI (tridentctl): Backend.json File  
 Add a backend to your orchestrator. 
 Edit the file `Samples/backend-qts1.json` or create a new one as shown below. 
 You must configure this file before you create a volume. Each column is required.  
 ```json  
-{  
-    "version": 1,  
-    "storageDriverName": "qnap-iscsi",  
-    "backendName": "<Name>",  
-    "storageAddress": "<QTS IP Address>",  
-    "username": "<QTS Username>",  
-    "password": "<QTS Password>",  
-    "debugTraceFlags": {"api":false, "method":true},  
-    "storage": [  
-        {  
-            "labels": {"performance": "premium"},  
-            "features":{  
-                "tiering": "Enable",  
-                "tierType": "SSD",  
-                "ssdCache": "true"  
-            },  
-            "serviceLevel": "premium"  
-        },  
-        {  
-            "labels": {"performance": "standard"},  
-            "features":{  
-                "tiering": "Enable",  
-                "tierType": "SSD"  
-            },  
-            "serviceLevel": "standard"  
-        },  
-        {  
-            "labels": {"performance": "basic"},  
-            "features":{  
-                "tiering": "Disable",  
-                "tierType": "SATA"  
-            },  
-            "serviceLevel": "basic"  
-        }  
-    ]  
-}  
+{
+    "version": 1,
+    "storageDriverName": "qnap-iscsi",
+    "backendName": "qts-david",
+    "storageAddress": "10.20.91.69",
+    "username": "admin",
+    "password": "abcd1234",
+    "debugTraceFlags": {"method":true},
+    "storage": [
+        {
+            "labels": {"storage": "qts-david"},
+            "serviceLevel": "Any"
+        },
+        {
+            "labels": {"performance": "premium"},
+            "features":{
+                "tiering": "Enable",
+                "tierType": "SSD",
+                "ssdCache": "true"
+            },
+            "serviceLevel": "SSD-Cache"
+        },
+        {
+            "labels": {"performance": "standard"},
+            "features":{
+                "tiering": "Enable",
+                "tierType": "SSD"
+            },
+            "serviceLevel": "Tiering"
+        },
+        {
+            "labels": {"performance": "basic"},
+            "features":{
+                "tiering": "Disable",
+                "tierType": "SATA"
+            },
+            "serviceLevel": "Non-Tiering"
+        }
+    ]
+}
+
 ```  
  
 ### StorageClass.yaml File  
@@ -201,8 +262,19 @@ spec:
   storageClassName: basic  
 ```  
  
-## Installation  
-### Adding a Backend  
+## Installation
+### Adding a Backend by CR(TridentBackendConfig)
+1. Make sure you have a corresponding pool. 
+2. Add a backend based on the yaml file you configured earlier. 
+```
+./tridentctl create backend -f <backend.json> -n trident
+```
+3. Check the result. 
+   - Run the following commands one at a time. 
+```
+kubectl get qpools -n trident
+```
+### Adding a Backend by CLI(tridentctl)
 1. Make sure you have a corresponding pool. 
 2. Ensure you have the permission to execute `tridentctl`. 
 ``` 

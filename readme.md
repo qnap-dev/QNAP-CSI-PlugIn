@@ -124,11 +124,15 @@ _Note: You need `VolumeSnapshot` to take snapshots._
 kubectl apply -k VolumeSnapshot 
 ``` 
  
-### Check if Trident is Ready to Deploy 
+### Check if Trident is Ready
 ``` 
 kubectl get deployment -n trident 
 ``` 
-   - The result should include `trident-csi` and `trident-operator`. 
+   - The result should include `trident-controller` and `trident-operator`. 
+``` 
+kubectl get service -n trident 
+``` 
+   - The result should include `trident-csi`. 
  
 ## CSI Configuration  
 ### CR (TridentBackendConfig): backend-config-sample.yaml

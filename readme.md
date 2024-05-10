@@ -159,6 +159,7 @@ spec:
   version: 1
   storageDriverName: qnap-iscsi
   backendName: qts-david
+  networkInterfaces: ["K8s-ISCSI"] #optional
   credentials:
     name: backend-qts-sample-secret
   debugTraceFlags:
@@ -178,13 +179,11 @@ spec:
         performance: standard
       features:
         tiering: Enable
-        tierType: SSD
       serviceLevel: Tiering
     - labels:
         performance: basic
       features:
         tiering: Disable
-        tierType: SATA
       serviceLevel: Non-Tiering
 ```
 ### CLI (tridentctl): Backend.json File  
@@ -197,8 +196,9 @@ You must configure this file before you create a volume. Each column is required
     "storageDriverName": "qnap-iscsi",
     "backendName": "qts-david",
     "storageAddress": "10.20.91.69",
-    "username": "admin",
+    "username": "david",
     "password": "abcd1234",
+    "networkInterfaces": ["K8s-ISCSI"], 
     "debugTraceFlags": {"method":true},
     "storage": [
         {
@@ -209,7 +209,6 @@ You must configure this file before you create a volume. Each column is required
             "labels": {"performance": "premium"},
             "features":{
                 "tiering": "Enable",
-                "tierType": "SSD",
                 "ssdCache": "true"
             },
             "serviceLevel": "SSD-Cache"
@@ -217,22 +216,19 @@ You must configure this file before you create a volume. Each column is required
         {
             "labels": {"performance": "standard"},
             "features":{
-                "tiering": "Enable",
-                "tierType": "SSD"
+                "tiering": "Enable"
             },
             "serviceLevel": "Tiering"
         },
         {
             "labels": {"performance": "basic"},
             "features":{
-                "tiering": "Disable",
-                "tierType": "SATA"
+                "tiering": "Disable"
             },
             "serviceLevel": "Non-Tiering"
         }
     ]
 }
-
 ```  
  
 ### StorageClass.yaml File  

@@ -272,7 +272,7 @@ spec:
 3. Check the result. 
    - Run the following commands one at a time. 
 ```
-kubectl get qpools -n trident
+kubectl apply -f <backend yaml file path>
 ```
 ### Adding a Backend by CLI(tridentctl)
 1. Make sure you have a corresponding pool. 

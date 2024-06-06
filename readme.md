@@ -5,7 +5,7 @@ This is the official [Container Storage Interface](https://github.com/container-
 ### CSI Driver Version and Compatibility  
 | **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS**                |  
 |------------------- | --------------------------------- | ------------------------------------- |  
-| v1.2.0             | 1.21 to 1.27                      | NAS running QTS 5.0.0 or later        |  
+| v1.2.1             | 1.21 to 1.27                      | NAS running QTS 5.0.0 or later        |  
  
 ### Supported Host Operating Systems  
 - Debian 8 or later  
@@ -48,7 +48,7 @@ kubectl auth can-i '*' '*' --all-namespaces
    - The result should be "yes". 
 3. Verify that you can launch a pod that uses an image from Docker Hub and can reach your storage system over the pod network.  
 ``` 
-kubectl run -i --ttyping --image=busybox --restart=Never --rm --\ping <NAS management IP> 
+kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \ping <NAS management IP> 
 ``` 
    - For example: `kubectl run -i --tty ping --image=busybox --restart=Never --rm -- \ping 10.64.118.157`  
 4. Verify that your NAS has created a storage pool and iSCSI service is enabled. 
@@ -267,12 +267,12 @@ spec:
 1. Make sure you have a corresponding pool. 
 2. Add a backend based on the yaml file you configured earlier. 
 ```
-./tridentctl create backend -f <backend.json> -n trident
+kubectl apply -f <backend yaml file path>
 ```
 3. Check the result. 
    - Run the following commands one at a time. 
 ```
-kubectl apply -f <backend yaml file path>
+kubectl get tridentbackendconfigs.trident.qnap.io -n trident
 ```
 ### Adding a Backend by CLI(tridentctl)
 1. Make sure you have a corresponding pool. 

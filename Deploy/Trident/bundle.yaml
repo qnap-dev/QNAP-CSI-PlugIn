@@ -533,7 +533,7 @@ spec:
         - command:
             - /trident-operator
             - --log-level=debug
-            - --qts-cgi-image=qnapsystem/qnap-csi-backend-qts-sidecar:v1.2.0
+            - --qts-cgi-image=qnapsystem/qnap-csi-backend-qts-sidecar:v1.2.1
           env:
             - name: POD_NAME
               valueFrom:

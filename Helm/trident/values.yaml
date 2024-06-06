@@ -6,10 +6,10 @@ replicaCount: 1
 
 tridentOperator:
   image: qnapsystem/qnap-csi-operator:v1.2.0
-  cgiServerImage : qnapsystem/qnap-csi-backend-qts-sidecar:v1.2.0
+  cgiServerImage : qnapsystem/qnap-csi-backend-qts-sidecar:v1.2.1
   imagePullPolicy: IfNotPresent
   logLevel: debug
 
 tridentOrchestrator:
-  image: qnapsystem/qnap-csi:v1.2.0
+  image: qnapsystem/qnap-csi:v1.2.1
   debug: true

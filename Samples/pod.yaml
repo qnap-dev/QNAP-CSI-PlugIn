@@ -23,4 +23,4 @@ spec:
       volumes:
       - name: my-pvc
         persistentVolumeClaim:
-          claimName: pvc-basic
+          claimName: pvc-premium

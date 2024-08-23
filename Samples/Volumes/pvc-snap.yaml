@@ -12,4 +12,4 @@ spec:
     name: pvc-snapshot
     kind: VolumeSnapshot
     apiGroup: snapshot.storage.k8s.io
-  storageClassName: basic
+  storageClassName: premium

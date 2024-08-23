@@ -5,4 +5,4 @@ metadata:
 spec:
   volumeSnapshotClassName: trident-snapshotclass
   source:
-    persistentVolumeClaimName: pvc-basic
+    persistentVolumeClaimName: pvc-premium

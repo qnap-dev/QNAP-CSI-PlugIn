@@ -3,9 +3,9 @@ This is the official [Container Storage Interface](https://github.com/container-
  
 ## Software Prerequisites  
 ### CSI Driver Version and Compatibility  
-| **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS**                |  
-|------------------- | --------------------------------- | ------------------------------------- |  
-| v1.2.1             | 1.21 to 1.27                      | NAS running QTS 5.0.0 or later        |  
+| **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS**                        |  
+|------------------- | --------------------------------- | --------------------------------------------- |  
+| v1.3.0             | 1.24 to 1.30                      | NAS running QTS or QuTS Hero 5.1.0 or later   |  
  
 ### Supported Host Operating Systems  
 - Debian 8 or later  
@@ -21,7 +21,9 @@ This is the official [Container Storage Interface](https://github.com/container-
 ## Supported Features  
 - Add StorageClasses  
 - Add, resize, clone, and import Persistent Volume Claims (PVCs)  
-- Take snapshots  
+- Take snapshots, SSD Cache, RaidLevel, Qtier (QTS only)
+- Threshold, ThinAllocate
+- Hero only: Compression, Deduplication, Fast clone
  
 ## Deploying the Driver  
 ### Before You Start  
@@ -136,13 +138,13 @@ kubectl get service -n trident
  
 ## CSI Configuration  
 ### CR (TridentBackendConfig): backend-config-sample.yaml
-Edit the file `Samples/backend-config-sample.yaml` or create a new one as shown below. 
+Edit the file `Samples/backend/backend-sample-qts` or `backend-sample-hero.yaml` or create a new one as shown below. 
 You must configure this file before you create a volume. Each column is required.  
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: backend-qts-sample-secret
+  name: backend-qts
   namespace: trident
 type: Opaque
 stringData:
@@ -153,42 +155,56 @@ stringData:
 apiVersion: trident.qnap.io/v1
 kind: TridentBackendConfig
 metadata:
-  name: backend-qts-sample-config
+  name: backend-qts
   namespace: trident
 spec:
   version: 1
   storageDriverName: qnap-iscsi
-  backendName: qts-david
+  backendName: qts
   networkInterfaces: ["K8s-ISCSI"] #optional
   credentials:
-    name: backend-qts-sample-secret
+    name: backend-qts
   debugTraceFlags:
-    method: false
+    method: true
   storage:
-    - labels:
-        storage: qts-david
-        serviceLevel: Any
-    - labels:
+    - serviceLevel: Any
+      labels:
+        performance: any 
+    - serviceLevel: SSD-Cache
+      labels:
         performance: premium
       features:
         tiering: Enable
-        tierType: SSD
         ssdCache: "true"
-      serviceLevel: SSD-Cache
-    - labels:
+    - serviceLevel: Tiering
+      labels:
         performance: standard
       features:
         tiering: Enable
-      serviceLevel: Tiering
-    - labels:
+    - serviceLevel: Non-Tiering
+      labels:
         performance: basic
       features:
         tiering: Disable
-      serviceLevel: Non-Tiering
+    - serviceLevel: RAID0
+      labels:
+        performance: raid0
+      features:
+        raidLevel: "0"
+    - serviceLevel: RAID1
+      labels:
+        performance: raid1
+      features:
+        raidLevel: "1"
+    - serviceLevel: RAID5
+      labels:
+        performance: raid5
+      features:
+        raidLevel: "5"
 ```
 ### CLI (tridentctl): Backend.json File  
 Add a backend to your orchestrator. 
-Edit the file `Samples/backend-qts1.json` or create a new one as shown below. 
+Edit the file `Samples/backend/backend-qts1.json` or create a new one as shown below. 
 You must configure this file before you create a volume. Each column is required.  
 ```json  
 {
@@ -232,34 +248,63 @@ You must configure this file before you create a volume. Each column is required
 ```  
  
 ### StorageClass.yaml File  
-Edit the file `Samples/storage-class-qnap-qos.yaml` or create a new one as shown below.  
+Edit the file `Samples/StorageClass/sc.yaml` or create a new one as shown below.  
 ```yaml  
-apiVersion: storage.k8s.io/v1 
-kind: StorageClass 
-metadata: 
-  name: premium 
-provisioner: csi.trident.qnap.io #k8s CSI provisioner 
-parameters: 
-  selector: "performance=premium" 
-allowVolumeExpansion: true 
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: premium
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "performance=premium"
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "performance=standard"
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: basic
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "performance=basic"
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: any
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "performance=any"
+allowVolumeExpansion: true
 ```  
  
 ### PVC.yaml File 
-Edit the file `Samples/pvc-basic.yaml` or create a new one as shown below. 
+Edit the file `Samples/Volumes/pvc-any.yaml` or create a new one as shown below. 
 ```yaml  
-kind: PersistentVolumeClaim  
-apiVersion: v1  
-metadata:  
-  name: pvc-basic  
-  annotations:  
-    trident.qnap.io/ThinAllocate: "false"  
-spec:  
-  accessModes:  
-    - ReadWriteOnce  
-  resources:  
-    requests:  
-      storage: 5Gi  
-  storageClassName: basic  
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-any-1
+  annotations:
+      # thin allocate & threshold is customized
+    trident.qnap.io/threshold: "90"
+    trident.qnap.io/ThinAllocate: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: any
 ```  
  
 ## Installation
@@ -284,7 +329,7 @@ chmod u+x tridentctl
 ``` 
 ./bin/tridentctl create backend -f <backend.json> -n trident 
 ``` 
-   - For example: `./bin/tridentctl create backend -f Samples/backend-qts1.json -n trident` 
+   - For example: `./bin/tridentctl create backend -f Samples/backend/backend-sample.json -n trident` 
    - This should take around 30 seconds or less. 
    - If it takes over 30 seconds and shows the error "Command terminated with exit code 1" due to timeout, check your network connection and try again.  
 4. Check the result.  
@@ -297,7 +342,7 @@ kubectl get pods -n trident
 ``` 
 kubectl apply -f <StorageClass.yaml> 
 ``` 
-   - For example: `kubectl apply -f Samples/storage-class-qnap-qos.yaml`  
+   - For example: `kubectl apply -f Samples/StorageClass/sc.yaml`  
 
  
 ### Persistent Volume Claims (PVCs) 
@@ -305,14 +350,13 @@ kubectl apply -f <StorageClass.yaml>
 ``` 
 kubectl apply -f <pvc.yaml> 
 ``` 
-   - For example: `kubectl apply -f Samples/pvc-basic.yaml`  
-   - This example creates a thick LUN. If you want to create a thin LUN, refer to the `Samples/pvc-standard.yaml` file. 
+   - For example: `kubectl apply -f Samples/Volumes/pvc-any.yaml`  
 
 #### Resizing a PVC  
 ``` 
 kubectl edit pvc <pvc name> 
 ``` 
-   - For example: `kubectl edit pvc pvc-basic`  
+   - For example: `kubectl edit pvc pvc-any`  
    - After a few seconds, the capacity will increase on the NAS. 
    - After the pod restarts, information on the capacity will be updated. 
  

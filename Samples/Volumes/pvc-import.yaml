@@ -4,8 +4,8 @@ metadata:
   name: pvc-import
   namespace: default
   annotations:
-    trident.qnap.io/importOriginalName: "<LUN Name>"
-    trident.qnap.io/importBackendName: "<Backend Name>"
+    trident.qnap.io/importOriginalName: "test"
+    trident.qnap.io/importBackendName: "hero"
 spec:
   accessModes:
     - ReadWriteOnce

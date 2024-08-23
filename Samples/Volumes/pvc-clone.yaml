@@ -10,6 +10,6 @@ spec:
       storage: 5Gi
   dataSource:
     kind: PersistentVolumeClaim
-    name: pvc-basic
-  storageClassName: basic
+    name: pvc-premium
+  storageClassName: premium
 

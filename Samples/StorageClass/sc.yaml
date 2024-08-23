@@ -24,3 +24,12 @@ provisioner: csi.trident.qnap.io
 parameters:
   selector: "performance=basic"
 allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: any
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "performance=any"
+allowVolumeExpansion: true

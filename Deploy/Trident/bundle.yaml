@@ -149,6 +149,12 @@ rules:
   - apiGroups:
       - snapshot.storage.k8s.io
     resources:
+      - volumesnapshotclasses
+    verbs:
+      - create
+  - apiGroups:
+      - snapshot.storage.k8s.io
+    resources:
       - volumesnapshots/status
       - volumesnapshotcontents/status
     verbs:
@@ -220,12 +226,18 @@ rules:
       - tridentbackendconfigs/status
       - tridentmirrorrelationships
       - tridentmirrorrelationships/status
+      - tridentactionmirrorupdates
+      - tridentactionmirrorupdates/status
       - tridentsnapshotinfos
       - tridentsnapshotinfos/status
+      - tridentactionsnapshotrestores
+      - tridentactionsnapshotrestores/status
       - tridentprovisioners # Required for Tprov
       - tridentprovisioners/status # Required to update Tprov's status section
       - tridentorchestrators # Required for Torc
       - tridentorchestrators/status # Required to update Torc's status section
+      - tridentconfigurators # Required for tconf
+      - tridentconfigurators/status # Required to update tconf's status section
     verbs:
       - get
       - list
@@ -261,9 +273,6 @@ rules:
       - list
       - watch
       - create
-      - delete
-      - update
-      - patch
   - apiGroups:
       - apps
     resources:
@@ -301,10 +310,6 @@ rules:
       - get
       - list
       - create
-      - watch
-      - delete
-      - update
-      - patch
   - apiGroups:
       - ""
     resources:
@@ -322,7 +327,6 @@ rules:
     resources:
       - serviceaccounts
     verbs:
-      - watch
       - delete
       - update
       - patch
@@ -343,9 +347,6 @@ rules:
     verbs:
       - list
       - create
-      - delete
-      - update
-      - patch
   - apiGroups:
       - authorization.openshift.io
       - rbac.authorization.k8s.io
@@ -533,7 +534,7 @@ spec:
         - command:
             - /trident-operator
             - --log-level=debug
-            - --qts-cgi-image=qnapsystem/qnap-csi-backend-qts-sidecar:v1.2.1
+            - --qts-cgi-image=qnapsystem/qnap-csi-backend-qts-sidecar:v1.3.0
           env:
             - name: POD_NAME
               valueFrom:
@@ -541,9 +542,20 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: trident-operator
-          image: qnapsystem/qnap-csi-operator:v1.2.0
-          imagePullPolicy: IfNotPresent
+          image: qnapsystem/qnap-csi-operator:v1.3.0
+          imagePullPolicy: IfNotPresent 
           name: trident-operator
+          resources:
+            requests:
+              cpu: "10m"
+              memory: "40Mi"
+            limits:
+              cpu: "20m"
+              memory: "80Mi"
+          securityContext:
+            capabilities:
+              drop:
+                - all
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

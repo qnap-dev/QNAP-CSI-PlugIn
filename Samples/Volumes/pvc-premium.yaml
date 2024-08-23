@@ -1,0 +1,20 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-premium
+  annotations:
+    # thin allocate is customized
+    trident.qnap.io/Threshold: "90"
+    trident.qnap.io/ThinAllocate: "true" #"false"
+
+    # QuTS-hero features
+    # trident.qnap.io/Deduplication: "true"
+    # trident.qnap.io/Compression: "true"
+    # trident.qnap.io/FastClone: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: premium

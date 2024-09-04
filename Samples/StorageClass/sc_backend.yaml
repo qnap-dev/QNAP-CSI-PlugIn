@@ -4,6 +4,7 @@ metadata:
   name: qts-david
 provisioner: csi.trident.qnap.io
 parameters:
+  fsType: ext4
   selector: "storage=qts-david"
 allowVolumeExpansion: true
 ---
@@ -13,5 +14,6 @@ metadata:
   name: qts-dennis
 provisioner: csi.trident.qnap.io
 parameters:
+  fsType: ext4
   selector: "storage=qts-dennis"
 allowVolumeExpansion: true

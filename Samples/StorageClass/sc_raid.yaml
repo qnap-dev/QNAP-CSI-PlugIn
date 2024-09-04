@@ -4,6 +4,7 @@ metadata:
   name: raid0
 provisioner: csi.trident.qnap.io
 parameters:
+  fsType: ext4
   selector: "performance=raid0"
 allowVolumeExpansion: true
 ---
@@ -13,6 +14,7 @@ metadata:
   name: raid1
 provisioner: csi.trident.qnap.io
 parameters:
+  fsType: ext4
   selector: "performance=raid1"
 allowVolumeExpansion: true
 ---
@@ -22,5 +24,6 @@ metadata:
   name: raid5
 provisioner: csi.trident.qnap.io
 parameters:
+  fsType: ext4
   selector: "performance=raid5"
 allowVolumeExpansion: true

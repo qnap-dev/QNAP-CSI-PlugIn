@@ -256,6 +256,7 @@ metadata:
   name: premium
 provisioner: csi.trident.qnap.io
 parameters:
+  fsType: ext4
   selector: "performance=premium"
 allowVolumeExpansion: true
 ---
@@ -265,6 +266,7 @@ metadata:
   name: standard
 provisioner: csi.trident.qnap.io
 parameters:
+  fsType: ext4
   selector: "performance=standard"
 allowVolumeExpansion: true
 ---
@@ -274,6 +276,7 @@ metadata:
   name: basic
 provisioner: csi.trident.qnap.io
 parameters:
+  fsType: ext4
   selector: "performance=basic"
 allowVolumeExpansion: true
 ---
@@ -283,6 +286,7 @@ metadata:
   name: any
 provisioner: csi.trident.qnap.io
 parameters:
+  fsType: ext4
   selector: "performance=any"
 allowVolumeExpansion: true
 ```  

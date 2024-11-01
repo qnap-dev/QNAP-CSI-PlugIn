@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-qts-secret # Required. Name your secret.
+  namespace: trident
+type: Opaque
+stringData:
+  username: user # Required. Your NAS username.
+  password: 0000 # Required. Your NAS password.
+  storageAddress: 0.0.0.0 # Required. Your NAS IP address.
+---
+apiVersion: trident.qnap.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-qts # Required. Name your backend in Kubernetes.
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: qnap-iscsi
+  backendName: qts # Required. Name your backend in QNAP CSI.
+  networkInterfaces: ["Adapter1"] # Optional. Your adapter name or leave it empty.
+  credentials:
+    name: backend-qts-secret # Required. Your secret name.
+  debugTraceFlags:
+    method: true
+  storage: # Required. Define one or more virtual pools.
+    - serviceLevel: pool1 # Required. Name your virtual pool.
+      labels: # Required. Define custom labels for your virtual pool.
+        performance: performance1
+      features: # Optional. Define features for your virtual pool.
+        tiering: Enable
+    - serviceLevel: pool2
+      labels:
+        performance: performance2
+      features:
+        tiering: Enable
+        ssdCache: "true"
+        raidLevel: "1"

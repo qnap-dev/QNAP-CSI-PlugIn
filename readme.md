@@ -1,8 +1,3 @@
----
-title: QNAP CSI Driver for Kubernetes
-
----
-
 # QNAP CSI Driver for Kubernetes  
 This is the official [Container Storage Interface](https://github.com/container-storage-interface) (CSI) driver for QNAP NAS devices.  
 

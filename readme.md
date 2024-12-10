@@ -212,7 +212,7 @@ Please refer to the following examples.
         backendName: qts # Required. Name your backend in QNAP CSI.
         networkInterfaces: ["Adapter1"] # Optional. Your adapter name or leave it empty.
         credentials:
-          name: backend-qts-secret # Required. Your secret name.
+          name: backend-qts-secret # Required. Enter the secret name set in metadata.name.
         debugTraceFlags:
           method: true
         storage: # Required. Define one or more virtual pools.

@@ -1,38 +1,28 @@
 {
     "version": 1,
     "storageDriverName": "qnap-iscsi",
-    "backendName": "qts-david",
-    "storageAddress": "10.20.91.69",
-    "username": "david",
-    "password": "abcd1234",
-    "networkInterfaces": ["K8s-ISCSI"], 
-    "debugTraceFlags": {"method":true},
+    "backendName": "qts",
+    "storageAddress": "0.0.0.0",
+    "username": "user",
+    "password": "0000",
+    "networkInterfaces": ["Adapter1"], 
+    "debugTraceFlags": {"method": true},
     "storage": [
         {
-            "labels": {"storage": "qts-david"},
-            "serviceLevel": "Any"
-        },
-        {
-            "labels": {"performance": "premium"},
-            "features":{
-                "tiering": "Enable",
-                "ssdCache": "true"
-            },
-            "serviceLevel": "SSD-Cache"
-        },
-        {
-            "labels": {"performance": "standard"},
+            "labels": {"performance": "performance1"},
             "features":{
                 "tiering": "Enable"
             },
-            "serviceLevel": "Tiering"
+            "serviceLevel": "pool1"
         },
         {
-            "labels": {"performance": "basic"},
+            "labels": {"performance": "performance2"},
             "features":{
-                "tiering": "Disable"
+                "tiering": "Enable",
+                "ssdCache": "true",
+                "raidLevel": "1"
             },
-            "serviceLevel": "Non-Tiering"
-        }
+            "serviceLevel": "pool2"
+        },
     ]
 }

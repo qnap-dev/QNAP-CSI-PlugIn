@@ -534,7 +534,7 @@ spec:
         - command:
             - /trident-operator
             - --log-level=debug
-            - --qts-cgi-image=qnapsystem/qnap-csi-backend-qts-sidecar:v1.3.0
+            - --qts-cgi-image=davidcheng0922/grpc-server:v1.3.0-dev
           env:
             - name: POD_NAME
               valueFrom:
@@ -542,7 +542,7 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: trident-operator
-          image: qnapsystem/qnap-csi-operator:v1.3.0
+          image: davidcheng0922/trident-operator:v1.3.0-dev-test
           imagePullPolicy: IfNotPresent 
           name: trident-operator
           resources:

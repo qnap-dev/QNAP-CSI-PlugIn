@@ -1,5 +1,5 @@
 apiVersion: v2
-name: trident
+name: qnap-trident
 description: A Helm chart for deploying Trident CSI Plugin using Trident Operator
 type: application
 version: 2.0.0

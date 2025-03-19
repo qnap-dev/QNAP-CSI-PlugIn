@@ -1,0 +1,15 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-raid5
+  annotations:
+    # thin allocate & threshold is customized
+    trident.qnap.io/threshold: "66"
+    trident.qnap.io/ThinAllocate: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: raid5

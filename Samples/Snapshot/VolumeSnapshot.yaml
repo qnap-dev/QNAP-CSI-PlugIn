@@ -1,8 +1,8 @@
 apiVersion: snapshot.storage.k8s.io/v1
 kind: VolumeSnapshot
 metadata:
-  name: pvc-snapshot-premium
+  name: pvc-snapshot
 spec:
   volumeSnapshotClassName: trident-snapshotclass
   source:
-    persistentVolumeClaimName: pvc-premium
+    persistentVolumeClaimName: pvc-sample

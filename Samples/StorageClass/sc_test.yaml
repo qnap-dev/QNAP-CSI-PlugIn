@@ -1,9 +1,0 @@
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: test456
-provisioner: csi.trident.qnap.io
-parameters:
-  selector: "performance=premium"
-  selector: "usage=test"
-allowVolumeExpansion: true

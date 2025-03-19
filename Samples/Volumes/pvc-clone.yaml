@@ -4,7 +4,7 @@ metadata:
   name: pvc-from-clone
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce # iSCSI: ReadWriteOnce, Samba: ReadWriteMany
   resources:
     requests:
       storage: 5Gi
@@ -12,4 +12,3 @@ spec:
     kind: PersistentVolumeClaim
     name: pvc-sample
   storageClassName: storageclass1
-

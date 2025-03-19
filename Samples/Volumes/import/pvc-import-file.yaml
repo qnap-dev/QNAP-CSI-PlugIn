@@ -1,0 +1,15 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-import-file-test
+  namespace: default
+  annotations:
+    trident.qnap.io/importOriginalName: "bbb"
+    trident.qnap.io/importBackendName: "hero"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi #9564Mi #9.34Gi
+  storageClassName: qts-smb

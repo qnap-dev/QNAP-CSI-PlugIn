@@ -1,0 +1,15 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-any-1
+  annotations:
+      # thin allocate & threshold is customized
+    trident.qnap.io/Threshold: "90"
+    trident.qnap.io/ThinAllocate: "true"
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: any

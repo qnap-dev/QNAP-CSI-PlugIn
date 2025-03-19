@@ -534,7 +534,7 @@ spec:
         - command:
             - /trident-operator
             - --log-level=debug
-            - --qts-cgi-image=davidcheng0922/grpc-server:v1.3.0-dev
+            - --qts-cgi-image=qnapsystem/qnap-csi-backend-qts-sidecar:v1.4.0
           env:
             - name: POD_NAME
               valueFrom:
@@ -542,7 +542,7 @@ spec:
                   fieldPath: metadata.name
             - name: OPERATOR_NAME
               value: trident-operator
-          image: davidcheng0922/trident-operator:v1.3.0-dev-test
+          image: qnapsystem/qnap-csi-operator:v1.4.0
           imagePullPolicy: IfNotPresent 
           name: trident-operator
           resources:
@@ -553,9 +553,11 @@ spec:
               cpu: "20m"
               memory: "80Mi"
           securityContext:
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
             capabilities:
-              drop:
-                - all
+              drop: ["ALL"]
       affinity:
         nodeAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:

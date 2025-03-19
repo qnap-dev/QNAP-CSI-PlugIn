@@ -7,8 +7,8 @@ metadata:
     trident.qnap.io/ThinAllocate: "true"
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce # Required. iSCSI: ReadWriteOnce, Samba: ReadWriteMany
   resources:
     requests:
-      storage: 10Gi
+      storage: 10Gi # Required. Specify your resource size.
   storageClassName: storageclass1 # Required. Corresponds to the StorageClass name.

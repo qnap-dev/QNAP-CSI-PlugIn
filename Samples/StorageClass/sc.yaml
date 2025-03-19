@@ -1,0 +1,38 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: premium
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "performance=premium"
+  fsType: "ext4"
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: standard
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "performance=standard"
+  fsType: "ext3"
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: basic
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "performance=basic"
+  fsType: "xfs"
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: any
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "performance=any"
+allowVolumeExpansion: true

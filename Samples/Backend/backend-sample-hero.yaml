@@ -1,0 +1,43 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-hero
+  namespace: trident
+type: Opaque
+stringData:
+  username: <username>
+  password: <password>
+  storageAddress: <storage IP>
+---
+apiVersion: trident.qnap.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-hero
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: qnap-nas
+  backendName: hero
+  credentials:
+    name: backend-hero
+  debugTraceFlags:
+    method: true
+  storage:
+    - serviceLevel: Any
+      labels:
+        performance: any
+    - serviceLevel: RAID0-SSDCache
+      labels:
+        performance: premium
+      features:
+        ssdCache: "true"
+    - serviceLevel: RAID0
+      labels:
+        performance: standard
+      features:
+        raidLevel: "0"
+    - serviceLevel: RAID1
+      labels:
+        performance: basic
+      features:
+        raidLevel: "1"

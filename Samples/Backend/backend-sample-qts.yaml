@@ -1,0 +1,61 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backend-qts
+  namespace: trident
+type: Opaque
+stringData:
+  username: <username>
+  password: <password>
+  storageAddress: <storage IP>
+---
+apiVersion: trident.qnap.io/v1
+kind: TridentBackendConfig
+metadata:
+  name: backend-qts
+  namespace: trident
+spec:
+  version: 1
+  storageDriverName: qnap-iscsi
+  backendName: qts
+  networkInterfaces: ["K8s-ISCSI"] #optional
+  credentials:
+    name: backend-qts
+  debugTraceFlags:
+    method: true
+  storage:
+    - serviceLevel: Any
+      labels:
+        performance: any 
+    - serviceLevel: SSD-Cache
+      labels:
+        usage: test
+        performance: premium
+      features:
+        tiering: Enable
+        ssdCache: "true"
+    - serviceLevel: Tiering
+      labels:
+        performance: standard
+      features:
+        tiering: Enable
+    - serviceLevel: Non-Tiering
+      labels:
+        performance: basic
+      features:
+        tiering: Disable
+    - serviceLevel: RAID0
+      labels:
+        performance: raid0
+      features:
+        raidLevel: "0"
+    - serviceLevel: RAID1
+      labels:
+        performance: raid1
+      features:
+        raidLevel: "1"
+    - serviceLevel: RAID5
+      labels:
+        performance: raid5
+      features:
+        raidLevel: "5"

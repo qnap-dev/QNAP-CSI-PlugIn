@@ -1,0 +1,17 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: qts-david
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "storage=qts-david"
+allowVolumeExpansion: true
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: qts-dennis
+provisioner: csi.trident.qnap.io
+parameters:
+  selector: "storage=qts-dennis"
+allowVolumeExpansion: true

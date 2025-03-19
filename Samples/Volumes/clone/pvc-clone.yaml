@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-from-clone-blk
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 30Gi
+  dataSource:
+    kind: PersistentVolumeClaim
+    name: pvc-block
+  storageClassName: premium

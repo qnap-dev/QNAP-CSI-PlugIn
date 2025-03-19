@@ -1,0 +1,20 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-file-2
+  annotations:
+    # thin allocate is customized
+    trident.qnap.io/Threshold: "66"
+    trident.qnap.io/ThinAllocate: "true"
+
+    # QuTS-hero features
+    #trident.qnap.io/Deduplication: "true"
+    #trident.qnap.io/Compression: "true"
+    #trident.qnap.io/FastClone: "true"
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: qts-smb

@@ -32,7 +32,7 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
 ### CSI Driver Version and Compatibility  
 | **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS Operating Systems**                |  
 |------------------- | --------------------------------- | ------------------------------------- | 
-| v1.3.0             | v1.24 to v1.30                    | QTS 5.0.0 or later<br>QuTS hero h5.0.0 or later|
+| v1.4.0             | v1.24 to v1.30                    | QTS 5.0.0 or later<br>QuTS hero h5.0.0 or later|
  
 ### Supported Host Operating Systems  
 - Debian 8 or later  
@@ -40,6 +40,7 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
 - CentOS 7.0 or later  
 - RHEL 7.0 or later  
 - CoreOS 1353.8.0 or later
+- Talos 1.8 or later
 
 ### Supported Platforms
 - AMD64
@@ -48,7 +49,8 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
 <a name="Supported-Features"></a> 
 ## Supported Features 
 
-* Access mode: ReadWriteOnce
+* Protocol: iSCSI, Samba
+* Access mode: ReadWriteOnce, ReadWriteMany
 * Cloning
 * Snapshots
 * Expansion
@@ -62,13 +64,13 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
 * Ensure that both the Kubernetes and the QNAP NAS operating system versions are supported.
 > [!NOTE] 
 > Minikube is not supported.
-* Install open-iscsi in Kubernetes by running the following command in both the master and worker nodes: 
+* If the iSCSI protocol is utilized. Install open-iscsi in Kubernetes by running the following command in both the master and worker nodes: 
   ``` 
   sudo apt install open-iscsi 
   ``` 
 * Verify that your NAS has at least one available storage pool and iSCSI service is enabled. 
    - To check storage pools on your NAS, open Storage & Snapshots and navigate to "Storage > Storage/Snapshots".
-   - To check iSCSI service on your NAS, open iSCSI & Fibre Channel and verify that the "Service" toggle switch is on. 
+   - If the iSCSI protocol is utilized. To check iSCSI service on your NAS, open iSCSI & Fibre Channel and verify that the "Service" toggle switch is on. 
 <details>  <summary>Verify your Kubernetes cluster.</summary>
 
 ### Verifying Your Kubernetes Cluster  
@@ -171,7 +173,7 @@ kubectl apply -k VolumeSnapshot
 
 <a name="CSI-Driver-Configuration"></a>  
 ## CSI Driver Configuration  
-To ensure the CSI driver functions correctly, it is important to configure the backend, StorageClass, and PVC with matching labels and parameters to enable proper binding. The backend defines the virtual storage pools and connects the underlying physical resources, while the StorageClass specifies the QoS that the PVC will request. 
+To ensure the CSI driver functions correctly, it is important to configure the backend, secert (Optional), StorageClass, and PVC with matching labels and parameters to enable proper binding. The backend defines the virtual storage pools and connects the underlying physical resources, the secret is required when the Samba protocol is utilized for connection, while the StorageClass specifies the QoS that the PVC will request. 
 
 For binding to succeed, the PVC must reference a StorageClass that has the correct labels and selectors, which correspond to the virtual pools defined in the backend. Accurate configuration of names, labels, and selectors in each component is essential to ensure the PVC is correctly bound to the appropriate storage resources through the backend and StorageClass.
 
@@ -208,7 +210,7 @@ Please refer to the following examples.
         namespace: trident
       spec:
         version: 1
-        storageDriverName: qnap-iscsi
+        storageDriverName: qnap-nas #Required. Support 'qnap-nas'(latest) or 'qnap-iscsi'
         backendName: qts # Required. Name your backend in QNAP CSI.
         networkInterfaces: ["Adapter1"] # Optional. Your adapter name or leave it empty.
         credentials:
@@ -235,7 +237,7 @@ Please refer to the following examples.
       ```json  
       {
           "version": 1,
-          "storageDriverName": "qnap-iscsi",
+          "storageDriverName": "qnap-nas",
           "backendName": "qts",
           "storageAddress": "0.0.0.0",
           "username": "user",
@@ -266,10 +268,10 @@ Please refer to the following examples.
 2. In the YAML or JSON file, configure the following based on your NAS settings and usage requirements.
     * Specify the correct NAS `user`, `password`, and `IP address`.
     * Name the secret and backend.
-    * Optional: Set the iSCSI network portal in the `networkInterfaces` field.
+    * Optional: Set the network portal in the `networkInterfaces` field.
 
       > **Note:**<br>
-      > iSCSI network settings support physical and virtual adapters. In the `networkInterfaces` field, assign an interface name (e.g., \["Adapter1"\]) or leave it empty to default to `storageAddress`. To view the available adapters on your NAS, open Network & Virtual Switch and go to "Interfaces".
+      > Network settings support physical and virtual adapters. In the `networkInterfaces` field, assign an interface name (e.g., \["Adapter1"\]) or leave it empty to default to `storageAddress`. To view the available adapters on your NAS, open Network & Virtual Switch and go to "Interfaces".
       
     * Define the virtual pools based on your usage requirements.
       | Field                       | Description            | Example | 
@@ -285,18 +287,54 @@ Please refer to the following examples.
       | ssdCache  | Boosts NAS performance by caching frequently accessed data on SSDs, reducing latency and speeding up access. |true, false     |          |
       | tiering   | Moves hot data to high-performance drives and cold data to cost-efficient drives, optimizing performance and total cost of operation.|enable, disable | Only QTS |
 
+### Secert
+If the Samba protocol is utilized, the `Secert` configuration is required.
+Create or edit the YAML file `Samples/Secret/smb_user_secret.yaml`\
+Example:
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+    name: qts-csi-smb #Required. Name your secert for Samba.
+    namespace: trident
+type: Opaque
+stringData:
+    username: user1 #Required. The valid Samba username on the NAS.
+    password: 0000 #Required. The valid Samba password on the NAS.
+```
+    
 ### StorageClass 
-1. Create or edit the YAML file `Samples/StorageClass/sc-sample.yaml`.<br>
+1. Create or edit the YAML file.<br>
+    
+    iSCSI: `Samples/StorageClass/sc_iscsi_sample.yaml`.<br>
+    
+    Example:
+    ```yaml  
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: storageclass1 # Required. Name your storageclass.
+    provisioner: csi.trident.qnap.io
+    parameters:
+      selector: "performance=performance1" # Required. Corresponds to the labels in the virtual pool.
+      fsType: "ext4" # Optional. You can choose to enter ext4 (default), xfs, or ext3.
+    allowVolumeExpansion: true
+    ``` 
+    Samba: `Samples/StorageClass/sc_smb_sample.yaml`.<br>
+    
     Example:
     
     ```yaml  
     apiVersion: storage.k8s.io/v1
     kind: StorageClass
     metadata:
-      name: storageclass1 
+      name: storageclass1 # Required. Name your storageclass.
     provisioner: csi.trident.qnap.io
     parameters:
       selector: "performance=performance1" # Required. Corresponds to the labels in the virtual pool.
+      trident.qnap.io/fileProtocol: "smb"        
+      csi.storage.k8s.io/node-stage-secret-name: "qts-csi-smb" # Required. It must match the metadata.name in the Secret file.       
+      csi.storage.k8s.io/node-stage-secret-namespace: "trident" # Required. It must match the metadata.namespace in the Secret file.  
     allowVolumeExpansion: true
     ```  
 2. Configure the file based on your usage requirements.
@@ -316,10 +354,10 @@ Please refer to the following examples.
         trident.qnap.io/ThinAllocate: "true"
     spec:
       accessModes:
-        - ReadWriteOnce
+        - ReadWriteOnce # Required. iSCSI: ReadWriteOnce, Samba: ReadWriteMany
       resources:
         requests:
-          storage: 10Gi
+          storage: 10Gi # Required. Specify your resource size.
       storageClassName: storageclass1 # Required. Corresponds to the StorageClass name.
       ```
 
@@ -387,7 +425,13 @@ Execute the following command:
 kubectl apply -f <your StorageClass yaml file path> 
 ``` 
 For example: `kubectl apply -f Samples/StorageClass/sc-sample.yaml`  
-
+    
+> [!NOTE]
+> If you want to use the SMB protocol, please execute the following command and apply the corresponding Secret before adding the StorageClass.
+>``` 
+>kubectl apply -f <your Secret yaml file path> 
+>```
+> For example: `kubectl apply -f Samples/Secret/smb_user_secret.yaml`  
  
 ### 3. Add a PVC
 Execute the following command: 
@@ -397,6 +441,7 @@ kubectl apply -f <your pvc yaml file path>
 For example: `kubectl apply -f Samples/Volumes/pvc-sample.yaml`  
 
 ### 4. Verify the Connection (Optional)
+
 After completing the deployment steps, verify if the connection is mapped in iSCSI & Fibre Channel on the NAS. You should locate the connection in the "iSCSI Target List" on the "iSCSI Storage" page, as shown in the red frame in Figure 2.
 
 [![nas-iscsi.png](https://i.postimg.cc/qM02cB84/nas-iscsi.png)](https://postimg.cc/vDq1bsqN)
@@ -425,7 +470,7 @@ Example:
     name: pvc-from-clone
   spec:
     accessModes:
-      - ReadWriteOnce
+      - ReadWriteOnce # iSCSI: ReadWriteOnce, Samba: ReadWriteMany
     resources:
       requests:
         storage: 5Gi
@@ -447,7 +492,8 @@ Example:
 <a name="importing-a-pvc"></a> 
 ### Importing a PVC  
 
-  Create or edit the YAML file `Samples/Volumes/pvc-import.yaml` based on your usage requirements.
+iSCSI:  
+Create or edit the YAML file `Samples/Volumes/pvc-import.yaml` based on your usage requirements.
 >[!NOTE]
 >Only iSCSI LUNs are supported. 
 
@@ -456,7 +502,7 @@ Example:
   kind: PersistentVolumeClaim
   apiVersion: v1
   metadata:
-    name: pvc-import
+    name: pvc-import-iscsi
     namespace: default
     annotations:
       trident.qnap.io/importOriginalName: "test"
@@ -474,6 +520,32 @@ Example:
   kubectl apply -f <your pvc-import yaml file path> 
   ``` 
   For example: `kubectl apply -f Samples/Volumes/pvc-import.yaml`
+
+Samba:
+Create or edit the YAML file `Samples/Volumes/pvc-import.yaml` based on your usage requirements.
+```yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+    name: pvc-import-file
+annotations:
+    trident.qnap.io/importOriginalName: "shared-name"
+    trident.qnap.io/importBackendName: "qts"
+spec:
+    accessModes:
+       - ReadWriteMany
+    resources:
+            requests:
+                storage: 10Gi #The value entered should correspond to the actual or displayed size.
+storageClassName: storageclass1
+```
+>[!Note]
+>Due to filesystem limitations in QTS, the capacity shown in "Storage & Snapshot" may be slightly smaller than the specified size when creating a shared folder. For `resources.requests.storage`, enter either the specified size or the displayed size. 
+For example: 
+    - Specified size: 10GB
+    - Displayed size: 9.34GB.
+[![2025-01-02-120516.png](https://i.postimg.cc/LXcDRJhk/2025-01-02-120516.png)](https://postimg.cc/zbkKFXC3)
+<br>In QuTS Hero, always use the specified size.
 
 ### Creating a VolumeSnapshot from a PVC  
     
@@ -513,7 +585,7 @@ metadata:
   name: pvc-from-snap
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteOnce # iSCSI: ReadWriteOnce, Samba: ReadWriteMany
   resources:
     requests:
       storage: 5Gi

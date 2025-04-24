@@ -173,7 +173,7 @@ kubectl apply -k VolumeSnapshot
 
 <a name="CSI-Driver-Configuration"></a>  
 ## CSI Driver Configuration  
-To ensure the CSI driver functions correctly, it is important to configure the backend, secert (Optional), StorageClass, and PVC with matching labels and parameters to enable proper binding. The backend defines the virtual storage pools and connects the underlying physical resources, the secret is required when the Samba protocol is utilized for connection, while the StorageClass specifies the QoS that the PVC will request. 
+To ensure the CSI driver functions correctly, it is important to configure the backend, secret (Optional), StorageClass, and PVC with matching labels and parameters to enable proper binding. The backend defines the virtual storage pools and connects the underlying physical resources, the secret is required when the Samba protocol is utilized for connection, while the StorageClass specifies the QoS that the PVC will request.
 
 For binding to succeed, the PVC must reference a StorageClass that has the correct labels and selectors, which correspond to the virtual pools defined in the backend. Accurate configuration of names, labels, and selectors in each component is essential to ensure the PVC is correctly bound to the appropriate storage resources through the backend and StorageClass.
 
@@ -287,15 +287,15 @@ Please refer to the following examples.
       | ssdCache  | Boosts NAS performance by caching frequently accessed data on SSDs, reducing latency and speeding up access. |true, false     |          |
       | tiering   | Moves hot data to high-performance drives and cold data to cost-efficient drives, optimizing performance and total cost of operation.|enable, disable | Only QTS |
 
-### Secert
-If the Samba protocol is utilized, the `Secert` configuration is required.
+### Secret
+If the Samba protocol is utilized, the `Secret` configuration is required.
 Create or edit the YAML file `Samples/Secret/smb_user_secret.yaml`\
 Example:
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
-    name: qts-csi-smb #Required. Name your secert for Samba.
+    name: qts-csi-smb #Required. Name your secret for Samba.
     namespace: trident
 type: Opaque
 stringData:

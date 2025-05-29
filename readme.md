@@ -8,7 +8,7 @@ This is the official [Container Storage Interface](https://github.com/container-
 * [Installation](#Installation)
 * [CSI Driver Configuration](#CSI-Driver-Configuration)
 * [Deployment](#Deployment)
-* [Operations](#Operations)
+* [Operations](#Operations) 
 
 <a name="Introduction"></a> 
 ## Introduction
@@ -32,7 +32,7 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
 ### CSI Driver Version and Compatibility  
 | **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS Operating Systems**                |  
 |------------------- | --------------------------------- | ------------------------------------- | 
-| v1.4.0             | v1.24 to v1.30                    | QTS 5.0.0 or later<br>QuTS hero h5.0.0 or later|
+| v1.5.0             | v1.24 to v1.32                    | QTS 5.0.0 or later<br>QuTS hero h5.0.0 or later|
  
 ### Supported Host Operating Systems  
 - Debian 8 or later  
@@ -51,7 +51,7 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
 
 * Protocol: iSCSI, Samba
 * Access mode: ReadWriteOnce, ReadWriteMany
-* Cloning
+* Cloning  
 * Snapshots
 * Expansion
 * Pool level: RAID levels, SSD cache, Tiering
@@ -350,7 +350,7 @@ stringData:
     metadata:
       name: pvc1
       annotations: # Required. Define features for your volume.
-        trident.qnap.io/threshold: "90"
+        trident.qnap.io/Threshold: "90"
         trident.qnap.io/ThinAllocate: "true"
     spec:
       accessModes:
@@ -370,7 +370,8 @@ stringData:
         | Feature            | Description |Value        | Note           |
         |--------------------|--------|------|----------------|
         | Threshold          | Monitors storage usage to trigger alerts when capacity limits are reached, preventing overuse. |0-100      |                |
-        | ThinAllocate       | Dynamically allocates storage space to meet demands, optimizing usage and avoiding shortages. |true, false |                |
+        | ThinAllocate       | Dynamically allocates storage space to meet demands, optimizing usage and avoiding shortages. |true, false | 
+        | SharedFolderRecycleBin       | Enable or disable the Recycle Bin based on your needs. |true, false |SMB protocol only |
         | Compression        | Compresses files to reduce size, saving space and allowing more storage on the NAS. |true, false | Only QuTS hero |
         | Deduplication      | Eliminates duplicate data to reduce storage needs and minimize network data transfers.|true, false | Only QuTS hero |
         | FastClone          | Creates file copies faster to save space by sharing data blocks between originals and copies.|true, false | Only QuTS hero |

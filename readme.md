@@ -32,7 +32,7 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
 ### CSI Driver Version and Compatibility  
 | **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS Operating Systems**                |  
 |------------------- | --------------------------------- | ------------------------------------- | 
-| v1.5.0             | v1.24 to v1.32                    | QTS 5.0.0 or later<br>QuTS hero h5.0.0 or later|
+| v1.5.1             | v1.24 to v1.32                    | QTS 5.0.0 or later<br>QuTS hero h5.0.0 or later|
  
 ### Supported Host Operating Systems  
 - Debian 8 or later  

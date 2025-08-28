@@ -1,14 +1,14 @@
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-    name: pvc-import-file
-annotations:
+  name: pvc-import-file
+  annotations:
     trident.qnap.io/importOriginalName: "shared-name"
     trident.qnap.io/importBackendName: "qts"
 spec:
-    accessModes:
-       - ReadWriteMany
-    resources:
-            requests:
-                storage: 10Gi #The value entered should correspond to the actual or displayed size.
-storageClassName: storageclass1
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi # The value entered should correspond to the actual or displayed size.
+  storageClassName: storageclass1

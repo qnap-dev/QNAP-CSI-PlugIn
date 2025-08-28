@@ -4,4 +4,4 @@ description: A Helm chart for deploying Trident CSI Plugin using Trident Operato
 type: application
 version: 2.0.0
 kubeVersion: ">= 1.24.0 <= 1.32"
-appVersion: 1.5.0
+appVersion: 1.5.1

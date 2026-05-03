@@ -3,5 +3,5 @@ name: trident
 description: A Helm chart for deploying Trident CSI Plugin using Trident Operator
 type: application
 version: 2.0.0
-kubeVersion: ">= 1.24.0 <= 1.32"
+kubeVersion: ">= 1.24.0 <= 1.35"
 appVersion: 1.6.0

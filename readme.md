@@ -13,7 +13,6 @@ This is the official [Container Storage Interface](https://github.com/container-
     * [PVC](###PVC)
 * [Deployment](#Deployment)
 * [Operations](#Operations) 
-* [Known Limitations](#Known-Limitations)
 
 <a name="Introduction"></a> 
 ## Introduction
@@ -415,6 +414,9 @@ stringData:
     
     Bind the backend's virtual pool using the parameters.selector field, ensuring it matches the labels in the virtual pool.
 
+    > [!NOTE]
+    > For the iSCSI protocol, when a volume is staged on a node, the CSI driver uses `blkid` to check whether the device already contains a filesystem. If no filesystem is present, the driver formats the device with the `fsType` defined in the StorageClass. If a filesystem already exists, the device is mounted as-is and no formatting is performed.
+
 ### PVC
 1. Create or edit the YAML file `Samples/Volumes/pvc-sample.yaml`<br>
     Example:
@@ -573,7 +575,7 @@ Create or edit the YAML file `Samples/Volumes/pvc-import.yaml` based on your usa
 >Only iSCSI LUNs are supported. 
 
 >[!IMPORTANT]
->We recommend importing only LUNs that were originally created by the QNAP CSI driver, or LUNs whose existing filesystem type matches the `fsType` defined in the StorageClass. Importing a LUN whose filesystem cannot be recognized by the driver will fail.
+>When importing a LUN, its existing filesystem must be one that the QNAP CSI driver supports. Importing a LUN with an unsupported filesystem will fail. We therefore recommend importing only LUNs that were originally created by the QNAP CSI driver, or LUNs whose existing filesystem type matches the `fsType` defined in the StorageClass.
 
 Example:
   ```yaml
@@ -705,19 +707,3 @@ spec:
     ``` 
     helm delete qnap-trident -n trident 
     ``` 
-
-<a name="Known-Limitations"></a>
-## Known Limitations
-
-<a name="filesystem-detection-limitation"></a>
-### Filesystem Detection During Volume Formatting
-
-Before formatting an attached volume, the QNAP CSI driver checks whether the target device already contains a filesystem. This mechanism is designed to prevent accidental formatting of volumes that already hold data.
-
-In rare timing-sensitive scenarios, an iSCSI device may appear on the node before it is fully readable. If filesystem detection is performed during this brief readiness gap, the result may not accurately reflect the actual state of the device.
-
-The driver includes additional safeguards to reduce this risk. It performs device-readiness checks before filesystem detection, applies this behavior to both multipath and single-path iSCSI LUNs, and re-verifies the device before formatting by reading the device header and running filesystem detection again.
-
-Although these safeguards reduce the likelihood of incorrect formatting, device availability may still be affected by the host operating system, iSCSI session state, Kubernetes/CSI mount timing, or other infrastructure conditions. Users are encouraged to ensure that the runtime environment is stable, including iSCSI connectivity, node health, network connectivity, and storage device responsiveness, to reduce the likelihood of such timing-sensitive issues.
-
-For more details, see [issue #50](https://github.com/qnap-dev/QNAP-CSI-PlugIn/issues/50).

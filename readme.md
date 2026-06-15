@@ -414,8 +414,8 @@ stringData:
     
     Bind the backend's virtual pool using the parameters.selector field, ensuring it matches the labels in the virtual pool.
 
-    > [!NOTE]
-    > For the iSCSI protocol, when a volume is staged on a node, the CSI driver uses `blkid` to check whether the device already contains a filesystem. If no filesystem is present, the driver formats the device with the `fsType` defined in the StorageClass. If a filesystem already exists, the device is mounted as-is and no formatting is performed.
+> [!NOTE]
+> For the iSCSI protocol, when a volume is staged on a node, the CSI driver uses `blkid` to check whether the device already contains a filesystem. If no filesystem is present, the driver formats the device with the `fsType` defined in the StorageClass. If a filesystem already exists, the device is mounted as-is and no formatting is performed.
 
 ### PVC
 1. Create or edit the YAML file `Samples/Volumes/pvc-sample.yaml`<br>

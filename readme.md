@@ -13,6 +13,7 @@ This is the official [Container Storage Interface](https://github.com/container-
     * [PVC](###PVC)
 * [Deployment](#Deployment)
 * [Operations](#Operations) 
+* [Troubleshooting](#Troubleshooting)
 
 <a name="Introduction"></a> 
 ## Introduction
@@ -36,7 +37,7 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
 ### CSI Driver Version and Compatibility  
 | **Driver Version** | **Supported Kubernetes Versions** | **Supported QNAP NAS Operating Systems**                |  
 |------------------- | --------------------------------- | ------------------------------------- | 
-| v1.6.2             | v1.24 to v1.35                    | QTS 5.1.0 or later (including QTS 6.0)<br>QuTS hero h5.1.0 or later (including QuTS hero h6.0.0)|
+| v1.6.3             | v1.24 to v1.35                    | QTS 5.1.0 or later (including QTS 6.0)<br>QuTS hero h5.1.0 or later (including QuTS hero h6.0.0)|
  
 ### Supported Host Operating Systems  
 - Debian 8 or later  
@@ -61,6 +62,9 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
 * Pool level: RAID levels, SSD cache, Tiering
 * Optimization: Thin Provisioning, Deduplication, Compression, Thresholds
 
+> [!NOTE]
+> **QuTS hero high availability clusters:** Synchronization between the active and passive nodes is managed by the high availability service on the NAS. A PVC operation completes once the active node has processed the request, and the NAS then synchronizes the volume to the passive node. To confirm that new, cloned, or restored volumes are protected, check the high availability cluster status in the High Availability Manager QPKG.
+
 <a name="Installation"></a> 
 ## Installation
 ### Preinstallation Checklist
@@ -75,6 +79,24 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
       ``` 
       sudo apt install open-iscsi 
       ``` 
+      >[!NOTE]
+      >Use this setup when the backend declares at most one interface in `networkInterfaces`.
+      >
+      >The driver decides whether an iSCSI volume needs a multipath device by checking whether the `multipath` command is available on the node. If it is, every iSCSI volume must have a multipath device before it can be mounted. At its default setting, `multipathd` does not create a multipath device for a LUN with only one path, so the volume may fail to mount.
+      >
+      >Several Linux distributions install multipath tooling as part of a default or recommended package set, so check each worker node even if you never configured multipath:
+      >```
+      >command -v multipath
+      >```
+      >If the command prints a path, we recommend one of the following:
+      >- Remove the multipath tooling (recommended for single-path nodes):
+      >  ```
+      >  sudo apt remove multipath-tools          # Debian / Ubuntu
+      >  sudo yum remove device-mapper-multipath  # CentOS / RHEL
+      >  ```
+      >- Or keep it and set `find_multipaths no` in `/etc/multipath.conf`, then restart `multipathd`, as described in the Multipath iSCSI Setup below. Note that this setting applies to the whole host.
+      >
+      >Stopping or disabling the `multipathd` service alone is not enough, because the `multipath` command remains available after the service is stopped.
     * Multipath iSCSI Setup
       Install the required packages
       ```
@@ -91,10 +113,22 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
           user_friendly_names yes
           find_multipaths no
       }
+      devices {
+          device {
+              vendor "QNAP"
+              product "iSCSI Storage"
+              fast_io_fail_tmo 120
+              no_path_retry queue
+          }
+      }
       EOF
       ```
       >[!NOTE] 
-      >Ensure that /etc/multipath.conf contains find_multipaths no under defaults.
+      >Ensure that /etc/multipath.conf contains find_multipaths no under defaults. At its default setting, `multipathd` does not create a multipath device for a LUN that has only one path, which prevents the volume from mounting.
+      >
+      >`find_multipaths no` applies to the whole host, not only to QNAP volumes. `multipathd` will claim every single-path block device on the node, including local disks. Apply it only on nodes intended for multipath iSCSI workloads.
+      >
+      >The `devices` section applies only to QNAP LUNs. `multipathd` overrides the iSCSI timeout set by the CSI driver (`replacementTimeout` in the StorageClass) with its own `fast_io_fail_tmo`, which defaults to 5 seconds. With the default, a short network outage or a NAS high availability switchover can turn the filesystem read-only. Keep `fast_io_fail_tmo` equal to or greater than `replacementTimeout`.
       
       Enable and start the multipath service
       ```
@@ -105,7 +139,6 @@ Figure 1. Process of creating a volume with the QNAP CSI driver.
       ```
       sudo systemctl status multipath-tools
       sudo systemctl status open-iscsi
-      sudo systemctl status multipath-tools
       ```
 
 
@@ -222,6 +255,7 @@ For binding to succeed, the PVC must reference a StorageClass that has the corre
 > [!WARNING]
 > Avoid modifying CSI-provisioned resources directly through the UI.
 > Changes made outside the CSI workflow may cause configuration mismatches between components and lead to unexpected behavior.
+> In particular, do not map additional LUNs to an iSCSI target created by the CSI driver. The driver assumes one LUN per target and will not map a volume to a target that already has another LUN.
 
 
 ### Backend
@@ -252,7 +286,7 @@ Please refer to the following examples.
         chapInitiatorPassword: <initiator_password> # Optional. Password for the initiator’s CHAP authentication. 
         chapTargetUsername: <target_username> # Optional. Username used by the target to authenticate back to the initiator (for mutual CHAP).
         chapTargetPassword: <target_password> # Optional. Password for the target’s CHAP authentication (for mutual CHAP). 
-        storageAddress: "0.0.0.0" # Required. Your NAS IP address.
+        storageAddress: "0.0.0.0" # Required. Your NAS IP address. On a QuTS hero high availability cluster, use the cluster IP.
         https: "false" # Optional. Whether to enable a secure connection. Default: False.
         port: "8080" # Optional. Specify the port. Default: 8080.
         trustedCACertificate: <Base64-encoded-trusted-ca-certificate-for-backend> # Optional. Base64-encoded value of trusted CA certificate. Used for certificate-based authentication. 
@@ -266,7 +300,7 @@ Please refer to the following examples.
         version: 1
         storageDriverName: qnap-nas #Required. Support 'qnap-nas'(latest) or 'qnap-iscsi'
         backendName: qts # Required. Name your backend in QNAP CSI.
-        networkInterfaces: ["Adapter1"] # Optional. Your adapter name or leave it empty.
+        networkInterfaces: ["Adapter1"] # Optional. Your adapter name or leave it empty. Do not set it on a QuTS hero high availability cluster.
         useCHAP: true # Optional. Enables CHAP authentication for iSCSI connections.
         credentials:
           name: backend-qts-secret # Required. Enter the secret name set in metadata.name.
@@ -344,12 +378,20 @@ Please refer to the following examples.
 
       > [!Note]
       > Network settings support physical and virtual adapters. In the networkInterfaces field, assign one or multiple interface names (e.g., ["Adapter1", "Adapter2"]), or leave it empty to default to `storageAddress`. To view the available adapters on your NAS, open Network & Virtual Switch and go to "Interfaces".
+      > <br>The number of interfaces determines the node setup. With zero or one interface, the volume has a single iSCSI path; follow the Single-Path iSCSI Setup in [Installation](#Installation).
       > <br>If you plan to use multipath, consider the following requirements:
       > - Configure multipath on your Kubernetes nodes. (Refer to [Installation](#Installation))
       > - Specify more than one interface in `networkInterfaces`to enable redundant paths.
       > - Use interfaces on different subnets or uplinks to improve availability and, when supported by the workload and OS policies, achieve better path distribution.
       >
       > Multipath enhances reliability by providing multiple independent I/O paths. Its performance benefits depend on proper network topology, path separation, and node-side configuration.
+
+      > [!IMPORTANT]
+      > **QuTS hero high availability clusters:** Set `storageAddress` to the cluster IP and leave `networkInterfaces` unset.
+      > - Adapter names can differ between the two NAS nodes, so the same `networkInterfaces` value may not match on the other node.
+      > - A node's own IP address stays with that node when the cluster switches over or fails over, so iSCSI sessions that use it stop working. The cluster IP always moves to the active node.
+      >
+      > Without `networkInterfaces`, each volume uses a single iSCSI path through the cluster IP. Follow the Single-Path iSCSI Setup in [Installation](#Installation).
 
       
     * Define the virtual pools based on your usage requirements.
@@ -397,7 +439,7 @@ stringData:
     parameters:
       selector: "performance=performance1" # Required. Corresponds to the labels in the virtual pool.
       fsType: "ext4" # Optional. You can choose to enter ext4 (default), xfs, or ext3.
-      replacementTimeout: '120' # Optional. Define the iSCSI timeout, with a default value of 120 seconds 
+      replacementTimeout: '120' # Optional. Define the iSCSI timeout in seconds, with a default value of 120. On multipath nodes, set fast_io_fail_tmo in /etc/multipath.conf to the same value or greater.
     allowVolumeExpansion: true
     ``` 
     **SMB Protocol**: `Samples/StorageClass/sc_smb_sample.yaml`.<br>
@@ -523,7 +565,7 @@ Execute the following command:
 ``` 
 kubectl apply -f <your StorageClass yaml file path> 
 ``` 
-For example: `kubectl apply -f Samples/StorageClass/sc-sample.yaml`  
+For example: `kubectl apply -f Samples/StorageClass/sc_iscsi_sample.yaml`  
     
 > [!NOTE]
 > If you want to use the SMB protocol, please execute the following command and apply the corresponding Secret before adding the StorageClass.
@@ -592,12 +634,17 @@ Example:
 ### Importing a PVC  
 
 iSCSI:  
-Create or edit the YAML file `Samples/Volumes/pvc-import.yaml` based on your usage requirements.
->[!NOTE]
->Only iSCSI LUNs are supported. 
+Create or edit the YAML file `Samples/Volumes/import/pvc-import.yaml` based on your usage requirements.
 
 >[!IMPORTANT]
->When importing a LUN, its existing filesystem must be one that the QNAP CSI driver supports. Importing a LUN with an unsupported filesystem will fail. We therefore recommend importing only LUNs that were originally created by the QNAP CSI driver, or LUNs whose existing filesystem type matches the `fsType` defined in the StorageClass.
+>We recommend importing only LUNs that were originally created by the QNAP CSI driver. A LUN created outside the driver may have a layout that the driver does not recognize, which can lead to unexpected errors after the import.
+>
+>The LUN's existing filesystem must be one that the QNAP CSI driver supports, and should match the `fsType` defined in the StorageClass. Importing a LUN with an unsupported filesystem will fail.
+
+>[!CAUTION]
+>We do not recommend importing a LUN whose iSCSI target also has other LUNs mapped. The driver assumes one LUN per target and cannot reliably identify which device belongs to the imported volume, so the node may attach and format a different LUN on the same target. Enabling `multipathd` does not prevent this.
+>
+>Before importing, make sure the LUN is the only LUN mapped to its target.
 
 Example:
   ```yaml
@@ -621,25 +668,29 @@ Example:
   ``` 
   kubectl apply -f <your pvc-import yaml file path> 
   ``` 
-  For example: `kubectl apply -f Samples/Volumes/pvc-import.yaml`
+  For example: `kubectl apply -f Samples/Volumes/import/pvc-import.yaml`
 
 Samba:
 Create or edit the YAML file `Samples/Volumes/pvc-import.yaml` based on your usage requirements.
+
+>[!IMPORTANT]
+>We recommend importing only shared folders that were originally created by the QNAP CSI driver. A shared folder created outside the driver may have settings that the driver does not recognize, which can lead to unexpected errors after the import.
+
 ```yaml
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-    name: pvc-import-file
-annotations:
+  name: pvc-import-file
+  annotations:
     trident.qnap.io/importOriginalName: "shared-name"
     trident.qnap.io/importBackendName: "qts"
 spec:
-    accessModes:
-       - ReadWriteMany
-    resources:
-            requests:
-                storage: 10Gi #The value entered should correspond to the actual or displayed size.
-storageClassName: storageclass1
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi # The value entered should correspond to the actual or displayed size.
+  storageClassName: storageclass1
 ```
 >[!Note]
 >Due to filesystem limitations in QTS, the capacity shown in "Storage & Snapshot" may be slightly smaller than the specified size when creating a shared folder. For `resources.requests.storage`, enter either the specified size or the displayed size. 
@@ -729,3 +780,30 @@ spec:
     ``` 
     helm delete qnap-trident -n trident 
     ``` 
+
+<a name="Troubleshooting"></a>
+## Troubleshooting
+### A pod stays in ContainerCreating with "multipath device not found when it is expected"
+The pod event looks like this:
+```
+rpc error: code = Internal desc = ... multipath device not found when it is expected
+```
+The worker node has the `multipath` command installed, so the driver requires a multipath device for the volume, but `multipathd` has not created one.
+
+Check how many interfaces the backend declares in `spec.networkInterfaces` of its `TridentBackendConfig`:
+* **Zero or one interface.** The volume has a single iSCSI path. At its default setting, `multipathd` never creates a multipath device for a single-path LUN. The tooling is usually present because the distribution installed it, not because it was configured.<br>
+  What to do: remove multipath tooling from the worker node, or set `find_multipaths no` and restart `multipathd`. See Single-Path iSCSI Setup in [Installation](#Installation).
+* **Two or more interfaces.** `multipathd` is not running, or `find_multipaths` is still at its default setting.<br>
+  What to do: set `find_multipaths no` in `/etc/multipath.conf` and restart `multipathd`. See Multipath iSCSI Setup in [Installation](#Installation).
+
+To check the node:
+```
+multipath -ll
+systemctl status multipathd
+```
+A node that prints nothing for `multipath -ll` but still has the command installed is the first case above.
+
+### A pod event says "node does not support multipath; device number should be one, currently N device(s)"
+The backend declares more than one network interface, so the volume has several iSCSI paths, but the worker node has no multipath tooling to combine them into one device.
+
+Install and configure multipath tooling on the node as described in Multipath iSCSI Setup in [Installation](#Installation), or reduce the backend to a single network interface.

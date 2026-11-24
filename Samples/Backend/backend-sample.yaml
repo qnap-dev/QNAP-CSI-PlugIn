@@ -11,7 +11,7 @@ stringData:
   chapInitiatorPassword: <initiator_password> # Optional. Password for the initiator’s CHAP authentication. 
   chapTargetUsername: <target_username> # Optional. Username used by the target to authenticate back to the initiator (for mutual CHAP).
   chapTargetPassword: <target_password> # Optional. Password for the target’s CHAP authentication (for mutual CHAP). 
-  storageAddress: "0.0.0.0" # Required. Your NAS IP address.
+  storageAddress: "0.0.0.0" # Required. Your NAS IP address. On a QuTS hero high availability cluster, use the cluster IP.
   https: "false" # Optional. Whether to enable a secure connection. Default: False.
   port: "8080" # Optional. Specify the port. Default: 8080.
   trustedCACertificate: <Base64-encoded-trusted-ca-certificate-for-backend> # Optional. Base64-encoded value of trusted CA certificate. Used for certificate-based authentication. 
@@ -25,7 +25,7 @@ spec:
   version: 1
   storageDriverName: qnap-nas #Required. Support 'qnap-nas'(latest) or 'qnap-iscsi'
   backendName: qts # Required. Name your backend in QNAP CSI.
-  networkInterfaces: ["Adapter1"] # Optional. Your adapter name or leave it empty.
+  networkInterfaces: ["Adapter1"] # Optional. Your adapter name or leave it empty. Do not set it on a QuTS hero high availability cluster.
   useCHAP: true # Optional. Enables CHAP authentication for iSCSI connections.
   credentials:
     name: backend-qts-secret # Required. Enter the secret name set in metadata.name.
